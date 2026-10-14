@@ -43,7 +43,9 @@ the templates. Don't edit versions or the changelog by hand.
 
 GitHub doesn't run workflows on pull requests opened by GitHub Actions, so the release
 workflow starts CI on the release pull request itself and checks its title. Give it a
-few minutes after the release pull request appears before merging.
+few minutes after the release pull request appears before merging. If the release pull
+request says it's out of date with `main`, click **Update branch** (rebase). That reruns
+the checks normally, because the update comes from you.
 
 ## Writing skills
 
