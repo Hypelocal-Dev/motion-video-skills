@@ -25,6 +25,8 @@ NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 say "2/4 Checking ffmpeg"
 command -v ffmpeg >/dev/null || fail "ffmpeg is required. macOS: 'brew install ffmpeg'. Ubuntu: 'sudo apt install ffmpeg'."
 
+command -v git-lfs >/dev/null || printf 'warning: git-lfs is not installed. Adding the HyperFrames plugin marketplace needs it: brew install git-lfs && git lfs install\n' >&2
+
 say "3/4 Creating the voice environment in $MV_VENV"
 PY="$(command -v python3 || true)"
 [[ -n "$PY" ]] || fail "Python 3.9+ is required."

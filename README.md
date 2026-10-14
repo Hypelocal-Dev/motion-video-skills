@@ -32,18 +32,27 @@ attached to every [release](https://github.com/tjdotwal/motion-video-skills/rele
 
 ## Install
 
-You need [Claude Code](https://claude.com/claude-code), Node 22 or newer, ffmpeg and
-Python 3.9 or newer. On a Mac with Homebrew: `brew install node ffmpeg`.
+You need [Claude Code](https://claude.com/claude-code), Node 22 or newer, ffmpeg, Git LFS
+and Python 3.9 or newer. On a Mac with Homebrew:
 
-**1. Add HyperFrames and this plugin** (in Claude Code; the same commands work in the
-terminal with `claude plugin ...`):
+```sh
+brew install node ffmpeg git-lfs && git lfs install
+```
+
+Git LFS is needed because HyperFrames stores some files with it. Without it, adding the
+HyperFrames marketplace fails with `git-lfs: command not found`.
+
+**1. Add the two marketplaces and install** (in Claude Code; in a terminal, use
+`claude plugin ...` instead of `/plugin ...`):
 
 ```text
 /plugin marketplace add heygen-com/hyperframes
-/plugin install hyperframes@hyperframes
 /plugin marketplace add tjdotwal/motion-video-skills
 /plugin install motion-video@motion-video-skills
 ```
+
+HyperFrames installs automatically as a dependency. The HyperFrames marketplace has to be
+added first, or the install stops and tells you to add it.
 
 **2. Set up the voice environment:**
 
@@ -59,6 +68,9 @@ It checks your machine and offers to run the setup, which installs Kokoro into
 ```sh
 npx skills add petergyang/no-ai-slop --skill no-ai-slop --global --yes
 ```
+
+**Updating:** run `/plugin` and turn on auto-update for both marketplaces, or run
+`claude plugin marketplace update` now and then.
 
 ### Without Claude Code
 
