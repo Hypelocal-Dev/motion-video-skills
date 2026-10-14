@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Render output (attach finished videos to GitHub releases, don't commit them)
+renders/
+**/.hyperframes/
+*.mp4
+*.mov
+
+# Scratch files from QA scripts
+*.contact.png
+transcript.json
+
+# Local env files
+.env
+.env.local

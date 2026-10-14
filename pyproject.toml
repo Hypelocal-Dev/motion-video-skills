@@ -1,0 +1,7 @@
+# Tooling config only. The scripts are stdlib-only Python and are not a package.
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
