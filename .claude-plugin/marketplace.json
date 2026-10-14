@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "motion-video-skills",
+  "description": "Claude Code plugins for making narrated product and UI motion videos with HyperFrames.",
+  "owner": {
+    "name": "Trent Walker"
+  },
+  "plugins": [
+    {
+      "name": "motion-video",
+      "source": "./motion-video",
+      "description": "Make narrated, product-UI motion videos with Claude Code and HyperFrames: brief to script, voiceover, sound bed, animated composition, QA and a 60fps MP4. Includes square-loop and 16:9 explainer templates.",
+      "author": {
+        "name": "Trent Walker"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "motion-video",
+  "version": "0.1.0",
+  "description": "Make narrated, product-UI motion videos with Claude Code and HyperFrames: brief to script, voiceover, sound bed, animated composition, QA and a 60fps MP4.",
+  "author": {
+    "name": "Trent Walker"
+  },
+  "homepage": "https://github.com/tjdotwal/motion-video-skills",
+  "repository": "https://github.com/tjdotwal/motion-video-skills",
+  "license": "MIT",
+  "keywords": [
+    "video",
+    "motion-graphics",
+    "animation",
+    "hyperframes",
+    "voiceover",
+    "explainer"
+  ]
+}
