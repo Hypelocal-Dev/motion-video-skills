@@ -10,8 +10,12 @@ locally, builds the sound bed, animates the product UI in HTML and renders a 60f
 with [HyperFrames](https://github.com/heygen-com/hyperframes). It checks the result
 before you see it.
 
-Sample renders of both templates are attached to every
-[release](https://github.com/tjdotwal/motion-video-skills/releases).
+<p align="center">
+  <img src="docs/demo.gif" width="480" alt="The square-loop template: a checklist of Booked, Paid and Reminded checks off as a phone books a class, payments flip to Paid and reminders go out, ending on the Brightdesk logo.">
+</p>
+
+The `square-loop` template, rendered unedited. Full-quality renders of both templates are
+attached to every [release](https://github.com/tjdotwal/motion-video-skills/releases).
 
 ## What you get
 
