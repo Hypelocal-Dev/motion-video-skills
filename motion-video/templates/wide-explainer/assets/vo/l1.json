@@ -1,0 +1,50 @@
+[
+  {
+    "text": "your",
+    "start": 0.05,
+    "end": 0.26,
+    "id": "w0"
+  },
+  {
+    "text": "team's",
+    "start": 0.26,
+    "end": 0.65,
+    "id": "w1"
+  },
+  {
+    "text": "schedule,",
+    "start": 0.65,
+    "end": 1.32,
+    "id": "w2"
+  },
+  {
+    "text": "lives",
+    "start": 1.35,
+    "end": 1.78,
+    "id": "w3"
+  },
+  {
+    "text": "in",
+    "start": 1.78,
+    "end": 1.89,
+    "id": "w4"
+  },
+  {
+    "text": "five",
+    "start": 1.89,
+    "end": 2.12,
+    "id": "w5"
+  },
+  {
+    "text": "different",
+    "start": 2.12,
+    "end": 2.6,
+    "id": "w6"
+  },
+  {
+    "text": "spreadsheets.",
+    "start": 2.65,
+    "end": 3.37,
+    "id": "w7"
+  }
+]

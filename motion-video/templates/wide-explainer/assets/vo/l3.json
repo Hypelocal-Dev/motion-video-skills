@@ -1,0 +1,32 @@
+[
+  {
+    "text": "Start",
+    "start": 0.09,
+    "end": 0.26,
+    "id": "w0"
+  },
+  {
+    "text": "your",
+    "start": 0.27,
+    "end": 0.49,
+    "id": "w1"
+  },
+  {
+    "text": "free",
+    "start": 0.49,
+    "end": 0.71,
+    "id": "w2"
+  },
+  {
+    "text": "trial",
+    "start": 0.71,
+    "end": 0.98,
+    "id": "w3"
+  },
+  {
+    "text": "today.",
+    "start": 0.98,
+    "end": 1.41,
+    "id": "w4"
+  }
+]

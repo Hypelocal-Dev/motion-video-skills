@@ -1,0 +1,349 @@
+<!doctype html>
+<!--
+  square-loop template: 1200x1200 hero video that autoplays muted and loops.
+
+  How it works
+  - Every scene is a 1200x1200 panel on one big #world canvas. cam() pans between panels,
+    so there are no hard cuts.
+  - The three checklist pills live outside the world, so they stay on screen. They start
+    stacked beside scene 1, fly into the dock, and get checked off one at a time by checkOff().
+  - The last 0.4s fades to #veil, a copy of the background, so the last frame matches frame 0.
+
+  Edit, top to bottom: CSS tokens, panel markup, then the timeline (times come from the
+  voiceover word timings in assets/vo/*.json).
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1200, height=1200" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* ---- Brand tokens: change these first */
+      :root {
+        --brand: #6c4cf5;
+        --brand-soft: #efeafe;
+        --ink: #1b1733;
+        --navy: #221a52;
+        --gray: #57537a;
+        --muted: #77739a;
+        --green: #138a55;
+        --green-bg: #def5ea;
+        --amber: #8a5a00;
+        --amber-bg: #fff1cc;
+        --line: #e9e6f5;
+        --soft: #f7f6fd;
+        --bg-1: #f8f7fe;
+        --bg-2: #ebe8fb;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1200px; height: 1200px; overflow: hidden; background: var(--bg-2); }
+      #root { position: relative; width: 1200px; height: 1200px; overflow: hidden; font-family: "Plus Jakarta Sans", sans-serif; color: var(--navy); background: var(--bg-2); }
+      .bg { position: absolute; inset: 0; background: radial-gradient(ellipse 900px 800px at 600px 560px, var(--bg-1) 0%, var(--bg-2) 100%); }
+      .glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+      .glow.g1 { width: 620px; height: 520px; left: 760px; top: -140px; background: rgba(150, 120, 255, 0.28); }
+      .glow.g2 { width: 560px; height: 480px; left: -200px; top: 820px; background: rgba(255, 170, 210, 0.18); }
+
+      #world { position: absolute; left: 0; top: 0; width: 3600px; height: 3600px; transform-origin: 0 0; }
+      .panel { position: absolute; width: 1200px; height: 1200px; }
+      .card { position: absolute; background: #fff; border-radius: 28px; box-shadow: 0 30px 70px rgba(50, 30, 140, 0.13); overflow: hidden; }
+      .tbar { height: 60px; display: flex; align-items: center; padding: 0 24px; gap: 16px; border-bottom: 2px solid var(--line); font-size: 22px; font-weight: 800; }
+      .dots3 { display: flex; gap: 8px; }
+      .dots3 i { width: 13px; height: 13px; border-radius: 50%; background: #d9d5ea; }
+      .chip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 17px; font-weight: 800; white-space: nowrap; }
+      .pend { background: var(--amber-bg); color: var(--amber); } .paid { background: var(--green-bg); color: var(--green); }
+      .av { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; flex: none; }
+
+      .hl { position: absolute; left: 60px; width: 1080px; top: 100px; text-align: center; font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; z-index: 5; }
+      .hl span { display: inline-block; white-space: pre; }
+
+      /* checklist dock */
+      .pill { position: absolute; top: 1010px; width: 330px; height: 92px; border-radius: 46px; background: #fff; border: 3px solid var(--line);
+        box-shadow: 0 18px 40px rgba(50, 30, 140, 0.12); transform-origin: 0 0; z-index: 6; }
+      .pill .pi { position: absolute; left: 16px; top: 15px; width: 56px; height: 56px; border-radius: 50%; background: var(--brand-soft); display: flex; align-items: center; justify-content: center; }
+      .pill .pi svg { width: 30px; height: 30px; }
+      .pill b { position: absolute; left: 86px; top: 0; height: 86px; display: flex; align-items: center; font-size: 28px; font-weight: 800; }
+      .pill .pc { position: absolute; right: 20px; top: 21px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #cfcbe3; }
+      .pill .pcf { position: absolute; left: -3px; top: -3px; width: 44px; height: 44px; border-radius: 50%; background: var(--brand); display: flex; align-items: center; justify-content: center; }
+      .pill .ring { position: absolute; inset: -3px; border-radius: 46px; border: 3px solid var(--brand); }
+      #p0 { left: 81px; } #p1 { left: 435px; } #p2 { left: 789px; }
+      #fly { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: var(--brand); z-index: 7;
+        display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px rgba(108, 76, 245, 0.45); }
+      .ck { width: 26px; height: 26px; }
+
+      /* P1 week */
+      #week { left: 90px; top: 300px; width: 500px; height: 600px; padding: 28px 28px 0; }
+      #week h3 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+      #week p { font-size: 20px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+      .cls { position: relative; height: 84px; margin-top: 14px; border-radius: 18px; background: var(--soft); border: 2px solid var(--line); display: flex; align-items: center; gap: 14px; padding: 0 16px; }
+      .cls .day { width: 56px; height: 56px; border-radius: 14px; background: var(--brand-soft); color: var(--brand); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; }
+      .cls .day em { font-style: normal; font-size: 21px; }
+      .cls b { display: block; font-size: 21px; font-weight: 800; color: var(--ink); }
+      .cls i { display: block; font-style: normal; font-size: 16px; font-weight: 600; color: var(--gray); }
+
+      /* phones */
+      .phone { position: absolute; border-radius: 56px; background: #1d1a2e; padding: 12px; box-shadow: 0 40px 80px rgba(30, 20, 90, 0.25); }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 46px; overflow: hidden; background: #f5f4fb; }
+      .notch { position: absolute; left: 50%; top: 12px; width: 100px; height: 28px; margin-left: -50px; border-radius: 14px; background: #1d1a2e; z-index: 5; }
+      .sc { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: #f5f4fb; }
+      .ptop { height: 140px; background: var(--brand); padding: 56px 22px 0; color: #fff; }
+      .ptop b { display: block; font-size: 24px; font-weight: 800; }
+      .ptop i { display: block; font-style: normal; font-size: 16px; font-weight: 600; color: #ddd4ff; margin-top: 2px; }
+      .prow { position: absolute; left: 18px; width: 310px; height: 76px; border-radius: 16px; background: #fff; padding: 12px 14px; }
+      .prow b { display: block; font-size: 19px; font-weight: 800; color: var(--ink); }
+      .prow i { display: block; font-style: normal; font-size: 15px; font-weight: 600; color: var(--gray); margin-top: 2px; }
+      .pbtn { position: absolute; left: 18px; width: 310px; height: 58px; border-radius: 29px; background: var(--brand); color: #fff; font-size: 20px; font-weight: 800; overflow: hidden; }
+      .pbtn div { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .pbtn .ok { background: #1fb465; }
+      .tap { position: absolute; left: 0; top: 0; width: 70px; height: 70px; margin: -35px 0 0 -35px; border-radius: 50%; background: rgba(108, 76, 245, 0.28); border: 3px solid rgba(108, 76, 245, 0.6); z-index: 9; }
+      #hero { height: 210px; background: linear-gradient(135deg, #8a6bff, #ff8fb8); padding: 70px 22px 0; color: #fff; }
+      #hero b { display: block; font-size: 30px; font-weight: 800; }
+      #hero i { display: block; font-style: normal; font-size: 17px; font-weight: 600; margin-top: 4px; }
+
+      /* P3 dashboard */
+      #dw { left: 60px; top: 260px; width: 1080px; height: 640px; }
+      #kp { position: absolute; left: 30px; top: 84px; display: flex; gap: 16px; }
+      .kpi { width: 250px; height: 104px; border-radius: 18px; background: var(--soft); border: 2px solid var(--line); padding: 14px 20px; }
+      .kpi i { font-style: normal; font-size: 18px; font-weight: 700; color: var(--gray); }
+      .kpi b { display: block; margin-top: 6px; font-size: 46px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+      #tbl { position: absolute; left: 30px; top: 214px; width: 1020px; }
+      .tr { position: relative; height: 66px; display: flex; align-items: center; border-bottom: 2px solid var(--line); font-size: 20px; font-weight: 700; color: var(--ink); }
+      .tr > div { padding: 0 14px; }
+      .tr .c1 { width: 380px; display: flex; align-items: center; gap: 12px; } .tr .c2 { width: 380px; color: var(--gray); } .tr .c3 { width: 240px; position: relative; height: 36px; }
+      .tr .c3 .chip { position: absolute; left: 14px; top: 0; }
+
+      /* P4 reminders */
+      .note { position: absolute; left: 14px; width: 318px; height: 96px; border-radius: 22px; background: rgba(255, 255, 255, 0.92); padding: 14px 16px; box-shadow: 0 10px 24px rgba(30, 20, 90, 0.12); }
+      .note b { display: block; font-size: 17px; font-weight: 800; color: var(--ink); }
+      .note i { display: block; font-style: normal; font-size: 16px; font-weight: 600; color: var(--gray); margin-top: 4px; line-height: 1.3; }
+      #lock { background: linear-gradient(160deg, #3b2b8f, #8a5bd6); }
+      #lock .time { position: absolute; left: 0; right: 0; top: 70px; text-align: center; color: #fff; font-size: 64px; font-weight: 700; }
+      #room { left: 560px; top: 300px; width: 580px; height: 560px; padding: 28px; }
+      #room h3 { font-size: 30px; font-weight: 800; }
+      #room p { font-size: 19px; font-weight: 600; color: var(--muted); margin-top: 4px; }
+      #seats { position: absolute; left: 28px; top: 150px; width: 524px; display: flex; flex-wrap: wrap; gap: 16px; }
+      .seat { position: relative; width: 74px; height: 74px; border-radius: 50%; background: var(--soft); border: 3px dashed #d3cfe6; }
+      .seat .on { position: absolute; inset: -3px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+      #cnt { position: absolute; left: 28px; bottom: 28px; font-size: 24px; font-weight: 800; }
+
+      /* P5 end */
+      #mark { position: absolute; left: 50%; top: 300px; width: 150px; height: 150px; margin-left: -75px; border-radius: 40px; background: var(--brand); display: flex; align-items: center; justify-content: center; box-shadow: 0 24px 50px rgba(108, 76, 245, 0.35); }
+      #mark svg { width: 86px; height: 86px; }
+      #word { position: absolute; left: 0; right: 0; top: 480px; text-align: center; font-size: 96px; font-weight: 800; letter-spacing: -0.04em; }
+      #tag { position: absolute; left: 150px; width: 900px; top: 640px; text-align: center; font-size: 48px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; color: var(--gray); }
+      #tag span { display: inline-block; white-space: pre; }
+
+      #veil { position: absolute; inset: 0; z-index: 20; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="22" data-width="1200" data-height="1200">
+      <audio id="music" data-start="0" data-duration="22" data-track-index="0" src="assets/music.wav" data-volume="1"></audio>
+      <audio id="vo1" data-start="0.2" data-duration="3.67" data-track-index="1" src="assets/vo/l1.wav"></audio>
+      <audio id="vo2" data-start="4.4" data-duration="3.56" data-track-index="2" src="assets/vo/l2.wav"></audio>
+      <audio id="vo3" data-start="8.5" data-duration="3.22" data-track-index="1" src="assets/vo/l3.wav"></audio>
+      <audio id="vo4" data-start="12.1" data-duration="3.43" data-track-index="2" src="assets/vo/l4.wav"></audio>
+      <audio id="vo5" data-start="16.1" data-duration="3.63" data-track-index="1" src="assets/vo/l5.wav"></audio>
+
+      <div class="bg"></div>
+      <div class="glow g1"></div>
+      <div class="glow g2"></div>
+
+      <div id="world">
+        <!-- P1: the week ahead -->
+        <div class="panel" style="left: 0; top: 0">
+          <div class="card" id="week">
+            <h3>This week</h3>
+            <p>Brightdesk Studio</p>
+            <div id="classes"></div>
+          </div>
+        </div>
+
+        <!-- P2: a member books from their phone -->
+        <div class="panel" style="left: 1200px; top: 0">
+          <div class="phone" id="ph" style="left: 415px; top: 236px; width: 370px; height: 728px">
+            <div class="screen">
+              <div class="notch"></div>
+              <div class="sc" id="scA">
+                <div class="ptop"><b>Brightdesk</b><i>Classes today</i></div>
+                <div class="prow" style="top: 160px"><b>Sunrise Yoga</b><i>7:00 AM · 4 spots left</i></div>
+                <div class="prow" style="top: 248px"><b>Core Flow</b><i>12:00 PM · 6 spots left</i></div>
+                <div class="prow" style="top: 336px"><b>Evening Stretch</b><i>6:30 PM · 9 spots left</i></div>
+              </div>
+              <div class="sc" id="scB">
+                <div id="hero"><b>Sunrise Yoga</b><i>7:00 AM · Studio A · with Maya</i></div>
+                <div class="prow" style="top: 230px"><b>60 minutes</b><i>All levels welcome</i></div>
+                <div class="prow" style="top: 318px"><b>Mats provided</b><i>Arrive 10 minutes early</i></div>
+                <div class="pbtn" style="top: 594px"><div>Book spot</div><div class="ok" id="booked"><svg class="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>You're booked</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tap" id="tap1"></div>
+        </div>
+
+        <!-- P3: payments come in -->
+        <div class="panel" style="left: 1200px; top: 1200px">
+          <div class="card" id="dw">
+            <div class="tbar"><div class="dots3"><i></i><i></i><i></i></div>Payments · This week</div>
+            <div id="kp">
+              <div class="kpi" id="kpaid"><i>Paid</i><b id="npaid">18</b></div>
+              <div class="kpi"><i>Pending</i><b id="npend">6</b></div>
+            </div>
+            <div id="tbl"><div id="rows"></div></div>
+          </div>
+        </div>
+
+        <!-- P4: reminders go out -->
+        <div class="panel" style="left: 2400px; top: 1200px">
+          <div class="phone" style="left: 120px; top: 236px; width: 370px; height: 728px">
+            <div class="screen" id="lock">
+              <div class="notch"></div>
+              <div class="time">6:00</div>
+              <div class="note" id="n0" style="top: 210px"><b>Brightdesk</b><i>Sunrise Yoga starts in 1 hour. See you in Studio A.</i></div>
+              <div class="note" id="n1" style="top: 318px"><b>Brightdesk</b><i>Your spot is saved. Bring water.</i></div>
+            </div>
+          </div>
+          <div class="card" id="room"><h3>Sunrise Yoga · 7:00 AM</h3><p>Checked in</p><div id="seats"></div><div id="cnt">0 of 12</div></div>
+        </div>
+
+        <!-- P5: end frame -->
+        <div class="panel" style="left: 2400px; top: 2400px">
+          <div id="mark"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div id="word">Brightdesk</div>
+          <div id="tag"></div>
+        </div>
+      </div>
+
+      <div class="hl" id="h2"></div>
+      <div class="hl" id="h3"></div>
+      <div class="hl" id="h4"></div>
+
+      <!-- checklist dock: label, icon -->
+      <div class="pill" id="p0"><div class="pi"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" fill="none" stroke="#6c4cf5" stroke-width="2.2"/><path d="M8 3v4M16 3v4M8.5 13l2.5 2.5 4.5-5" fill="none" stroke="#6c4cf5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><b>Booked</b><div class="pc"><div class="pcf" id="f0"><svg class="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="ring" id="r0"></div></div>
+      <div class="pill" id="p1"><div class="pi"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="3" fill="none" stroke="#6c4cf5" stroke-width="2.2"/><path d="M2.5 10.5h19M6.5 15h4" stroke="#6c4cf5" stroke-width="2.2" stroke-linecap="round"/></svg></div><b>Paid</b><div class="pc"><div class="pcf" id="f1"><svg class="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="ring" id="r1"></div></div>
+      <div class="pill" id="p2"><div class="pi"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z" fill="none" stroke="#6c4cf5" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 20.5h4" stroke="#6c4cf5" stroke-width="2.2" stroke-linecap="round"/></svg></div><b>Reminded</b><div class="pc"><div class="pcf" id="f2"><svg class="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="ring" id="r2"></div></div>
+      <div id="fly"><svg class="ck" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+      <div id="veil"><div class="bg"></div><div class="glow g1"></div><div class="glow g2"></div></div>
+    </div>
+
+    <script>
+      // ---- Demo content (all fictional)
+      const CLASSES = [["MON", "12", "Sunrise Yoga", "7:00 AM · Studio A"], ["TUE", "13", "Core Flow", "12:00 PM · Studio B"],
+        ["WED", "14", "Evening Stretch", "6:30 PM · Studio A"], ["THU", "15", "Power Pilates", "9:00 AM · Studio B"]];
+      document.getElementById("classes").innerHTML = CLASSES.map((c) =>
+        `<div class="cls"><div class="day">${c[0]}<em>${c[1]}</em></div><div><b>${c[2]}</b><i>${c[3]}</i></div></div>`).join("");
+
+      const PAYMENTS = [["JR", "Jess Rivera", "Sunrise Yoga", "#efeafe", "#6c4cf5"], ["AK", "Amir Khan", "Core Flow", "#def5ea", "#138a55"],
+        ["LP", "Lena Park", "Evening Stretch", "#fff1cc", "#8a5a00"], ["TB", "Tom Baker", "Power Pilates", "#ffe4ef", "#b4235f"],
+        ["NS", "Nia Scott", "Sunrise Yoga", "#e3ecff", "#2a45c8"]];
+      document.getElementById("rows").innerHTML = PAYMENTS.map((r, i) =>
+        `<div class="tr"><div class="c1"><div class="av" style="background:${r[3]};color:${r[4]}">${r[0]}</div>${r[1]}</div><div class="c2">${r[2]}</div>` +
+        `<div class="c3"><span class="chip pend" id="pa${i}">Pending</span><span class="chip paid" id="pb${i}">Paid</span></div></div>`).join("");
+
+      const SEAT_COLORS = [["#efeafe", "#6c4cf5"], ["#def5ea", "#138a55"], ["#fff1cc", "#8a5a00"], ["#ffe4ef", "#b4235f"]];
+      document.getElementById("seats").innerHTML = Array.from({ length: 12 }, (_, i) => {
+        const [bg, fg] = SEAT_COLORS[i % 4];
+        return `<div class="seat"><div class="on" id="seat${i}" style="background:${bg};color:${fg}">${String.fromCharCode(65 + i)}</div></div>`;
+      }).join("");
+
+      function words(id, text) {
+        document.getElementById(id).innerHTML = text.split(" ").map((w) => `<span>${w} </span>`).join("");
+      }
+      words("h2", "Book in two taps");
+      words("h3", "See who's paid");
+      words("h4", "Reminders go out on their own");
+      words("tag", "Booking, payments and reminders in one place.");
+
+      // ---- Timeline helpers
+      const tl = gsap.timeline({ paused: true });
+      const cam = (t, x, y, d = 0.85) => tl.to("#world", { x: -x, y: -y, duration: d, ease: "power3.inOut" }, t);
+      function wordsIn(sel, t, stagger = 0.06) {
+        tl.fromTo(sel + " span", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger, ease: "power3.out", immediateRender: false }, t);
+      }
+      function wordsOut(sel, t) {
+        tl.to(sel + " span", { y: -30, opacity: 0, duration: 0.3, stagger: 0.02, ease: "power2.in" }, t);
+      }
+      function tap(x, y, t) {
+        tl.fromTo("#tap1", { x, y, scale: 0.4, opacity: 0.9 }, { scale: 1.3, opacity: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, t);
+      }
+      // A check flies from (x, y) in viewport pixels into pill i.
+      const PILL_CHECK = [[366, 1056], [720, 1056], [1074, 1056]];
+      function checkOff(i, x, y, t) {
+        const [tx, ty] = PILL_CHECK[i];
+        tl.set("#fly", { x, y, scale: 0, opacity: 1 }, t);
+        tl.to("#fly", { scale: 1, duration: 0.18, ease: "power2.out" }, t);
+        tl.to("#fly", { x: tx, duration: 0.42, ease: "power2.inOut" }, t + 0.1);
+        tl.to("#fly", { y: ty, duration: 0.42, ease: "power3.in" }, t + 0.1);
+        tl.to("#fly", { scale: 0.8, opacity: 0, duration: 0.1 }, t + 0.5);
+        tl.fromTo("#f" + i, { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(1.6)", immediateRender: false }, t + 0.5);
+        tl.to("#r" + i, { opacity: 1, duration: 0.25 }, t + 0.5);
+      }
+
+      // ---- Initial states (gsap.set, so frame 0 renders them)
+      gsap.set("#world", { x: 0, y: 0 });
+      gsap.set(["#week", ".cls", ".hl span", "#tag span", ".pill .ring", "#fly", "#tap1"], { opacity: 0 });
+      gsap.set(".pcf", { scale: 0 });
+      gsap.set(["#scB", "#booked", ".tr", "[id^=pb]", ".note", ".seat .on", "#room", "#mark", "#word"], { opacity: 0 });
+      // pills start stacked beside the week card, larger, then fly to the dock
+      const S1 = [[650, 380], [650, 530], [650, 680]];
+      const DOCK = [81, 435, 789];
+      [0, 1, 2].forEach((i) => gsap.set("#p" + i, { x: S1[i][0] - DOCK[i], y: S1[i][1] - 1010, scale: 1.3, opacity: 0 }));
+
+      // ---- Scene 1: the week ahead (0 - 4.1)
+      tl.fromTo("#week", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out", immediateRender: false }, 0.2);
+      tl.to(".cls", { opacity: 1, duration: 0.4, stagger: 0.1, ease: "power2.out" }, 0.5);
+      [1.85, 2.55, 3.1].forEach((t, i) =>
+        tl.fromTo("#p" + i, { opacity: 0, x: S1[i][0] - DOCK[i] + 60 }, { opacity: 1, x: S1[i][0] - DOCK[i], duration: 0.5, ease: "power3.out", immediateRender: false }, t));
+
+      // ---- Scene 2: book in two taps (4.1 - 8.3)
+      cam(4.05, 1200, 0);
+      [0, 1, 2].forEach((i) => tl.to("#p" + i, { x: 0, y: 0, scale: 1, duration: 0.9, ease: "power3.inOut" }, 4.05 + i * 0.05));
+      tl.fromTo("#ph", { y: 80 }, { y: 0, duration: 0.85, ease: "power3.out", immediateRender: false }, 4.1);
+      wordsIn("#h2", 4.5);
+      tap(600, 248 + 160 + 38, 6.0);
+      tl.fromTo("#scB", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, 6.1);
+      tap(600, 248 + 594 + 29, 7.1);
+      tl.to("#booked", { opacity: 1, duration: 0.2 }, 7.15);
+      checkOff(0, 600, 248 + 594 + 29, 7.3);
+
+      // ---- Scene 3: see who's paid (8.3 - 11.9)
+      wordsOut("#h2", 8.0);
+      cam(8.2, 1200, 1200);
+      wordsIn("#h3", 8.6);
+      tl.fromTo(".tr", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.4, stagger: 0.07, ease: "power3.out", immediateRender: false }, 8.6);
+      [9.3, 9.65, 10.0, 10.35].forEach((t, i) => {
+        tl.to("#pa" + i, { opacity: 0, duration: 0.15 }, t);
+        tl.fromTo("#pb" + i, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.8)", immediateRender: false }, t);
+        tl.set("#npaid", { textContent: String(19 + i) }, t);
+        tl.set("#npend", { textContent: String(5 - i) }, t);
+      });
+      checkOff(1, 60 + 30 + 125, 260 + 84 + 52, 10.95);
+
+      // ---- Scene 4: reminders go out (11.9 - 15.8)
+      wordsOut("#h3", 11.6);
+      cam(11.8, 2400, 1200);
+      wordsIn("#h4", 12.2);
+      tl.fromTo("#room", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 12.3);
+      tl.fromTo("#n0", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, 12.7);
+      tl.fromTo("#n1", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, 13.3);
+      for (let i = 0; i < 11; i++) {
+        tl.fromTo("#seat" + i, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, 13.6 + i * 0.12);
+        tl.set("#cnt", { textContent: `${i + 1} of 12` }, 13.6 + i * 0.12);
+      }
+      checkOff(2, 305, 248 + 210 + 48, 14.95);
+
+      // ---- Scene 5: end frame (15.8 - 22)
+      wordsOut("#h4", 15.5);
+      cam(15.7, 2400, 2400);
+      tl.fromTo("#mark", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)", immediateRender: false }, 16.1);
+      tl.fromTo("#word", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }, 16.3);
+      wordsIn("#tag", 17.0, 0.07);
+      tl.to("#veil", { opacity: 1, duration: 0.4, ease: "power1.in" }, 21.5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

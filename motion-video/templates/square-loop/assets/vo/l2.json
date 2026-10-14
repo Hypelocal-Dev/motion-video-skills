@@ -1,0 +1,74 @@
+[
+  {
+    "text": "With",
+    "start": 0.05,
+    "end": 0.27,
+    "id": "w0"
+  },
+  {
+    "text": "Brightdesk,",
+    "start": 0.27,
+    "end": 1.08,
+    "id": "w1"
+  },
+  {
+    "text": "members",
+    "start": 1.13,
+    "end": 1.47,
+    "id": "w2"
+  },
+  {
+    "text": "book",
+    "start": 1.54,
+    "end": 1.74,
+    "id": "w3"
+  },
+  {
+    "text": "a",
+    "start": 1.77,
+    "end": 1.79,
+    "id": "w4"
+  },
+  {
+    "text": "spot",
+    "start": 1.85,
+    "end": 2.04,
+    "id": "w5"
+  },
+  {
+    "text": "from",
+    "start": 2.14,
+    "end": 2.25,
+    "id": "w6"
+  },
+  {
+    "text": "their",
+    "start": 2.25,
+    "end": 2.47,
+    "id": "w7"
+  },
+  {
+    "text": "phone",
+    "start": 2.47,
+    "end": 2.7,
+    "id": "w8"
+  },
+  {
+    "text": "in",
+    "start": 2.7,
+    "end": 2.83,
+    "id": "w9"
+  },
+  {
+    "text": "two",
+    "start": 2.83,
+    "end": 3.03,
+    "id": "w10"
+  },
+  {
+    "text": "taps.",
+    "start": 3.03,
+    "end": 3.5,
+    "id": "w11"
+  }
+]

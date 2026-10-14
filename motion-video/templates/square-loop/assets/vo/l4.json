@@ -1,0 +1,68 @@
+[
+  {
+    "text": "Reminders",
+    "start": 0.04,
+    "end": 0.58,
+    "id": "w0"
+  },
+  {
+    "text": "go",
+    "start": 0.63,
+    "end": 0.77,
+    "id": "w1"
+  },
+  {
+    "text": "out",
+    "start": 0.77,
+    "end": 0.98,
+    "id": "w2"
+  },
+  {
+    "text": "before",
+    "start": 0.98,
+    "end": 1.4,
+    "id": "w3"
+  },
+  {
+    "text": "every",
+    "start": 1.4,
+    "end": 1.75,
+    "id": "w4"
+  },
+  {
+    "text": "class,",
+    "start": 1.75,
+    "end": 2.22,
+    "id": "w5"
+  },
+  {
+    "text": "so",
+    "start": 2.22,
+    "end": 2.32,
+    "id": "w6"
+  },
+  {
+    "text": "more",
+    "start": 2.32,
+    "end": 2.52,
+    "id": "w7"
+  },
+  {
+    "text": "members",
+    "start": 2.52,
+    "end": 2.88,
+    "id": "w8"
+  },
+  {
+    "text": "show",
+    "start": 2.88,
+    "end": 3.08,
+    "id": "w9"
+  },
+  {
+    "text": "up.",
+    "start": 3.08,
+    "end": 3.33,
+    "id": "w10"
+  }
+]

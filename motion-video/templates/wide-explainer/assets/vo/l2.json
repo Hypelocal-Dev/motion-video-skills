@@ -1,0 +1,68 @@
+[
+  {
+    "text": "Brightdesk",
+    "start": 0.05,
+    "end": 0.64,
+    "id": "w0"
+  },
+  {
+    "text": "puts",
+    "start": 0.69,
+    "end": 0.94,
+    "id": "w1"
+  },
+  {
+    "text": "every",
+    "start": 0.94,
+    "end": 1.25,
+    "id": "w2"
+  },
+  {
+    "text": "shift,",
+    "start": 1.32,
+    "end": 1.75,
+    "id": "w3"
+  },
+  {
+    "text": "swap",
+    "start": 1.78,
+    "end": 2.06,
+    "id": "w4"
+  },
+  {
+    "text": "and",
+    "start": 2.08,
+    "end": 2.2,
+    "id": "w5"
+  },
+  {
+    "text": "class",
+    "start": 2.24,
+    "end": 2.64,
+    "id": "w6"
+  },
+  {
+    "text": "in",
+    "start": 2.67,
+    "end": 2.81,
+    "id": "w7"
+  },
+  {
+    "text": "one",
+    "start": 2.81,
+    "end": 3.04,
+    "id": "w8"
+  },
+  {
+    "text": "shared",
+    "start": 3.04,
+    "end": 3.32,
+    "id": "w9"
+  },
+  {
+    "text": "calendar.",
+    "start": 3.39,
+    "end": 3.88,
+    "id": "w10"
+  }
+]
