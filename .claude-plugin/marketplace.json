@@ -5,6 +5,9 @@
   "owner": {
     "name": "Trent Walker"
   },
+  "allowCrossMarketplaceDependenciesOn": [
+    "hyperframes"
+  ],
   "plugins": [
     {
       "name": "motion-video",
@@ -12,7 +15,13 @@
       "description": "Make narrated, product-UI motion videos with Claude Code and HyperFrames: brief to script, voiceover, sound bed, animated composition, QA and a 60fps MP4. Includes square-loop and 16:9 explainer templates.",
       "author": {
         "name": "Trent Walker"
-      }
+      },
+      "dependencies": [
+        {
+          "name": "hyperframes",
+          "marketplace": "hyperframes"
+        }
+      ]
     }
   ]
 }

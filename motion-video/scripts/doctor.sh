@@ -18,6 +18,7 @@ else
 fi
 if command -v ffmpeg >/dev/null; then pass "ffmpeg $(ffmpeg -version | head -1 | awk '{print $3}')"; else miss "ffmpeg not found (brew install ffmpeg)"; fi
 if command -v ffprobe >/dev/null; then pass "ffprobe"; else miss "ffprobe not found (comes with ffmpeg)"; fi
+if command -v git-lfs >/dev/null; then pass "git-lfs"; else miss "git-lfs not found; adding the HyperFrames marketplace needs it (brew install git-lfs && git lfs install)"; fi
 if command -v python3 >/dev/null; then pass "python3 $(python3 --version | awk '{print $2}')"; else miss "python3 not found"; fi
 
 if HF="$(npx --yes "hyperframes@${MV_HYPERFRAMES_VERSION}" --version 2>/dev/null)"; then
