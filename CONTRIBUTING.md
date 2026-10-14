@@ -41,6 +41,10 @@ changes land on `main`, it opens a release pull request that bumps the version i
 Merging that pull request tags the release, publishes it, and attaches sample renders of
 the templates. Don't edit versions or the changelog by hand.
 
+GitHub doesn't run workflows on pull requests opened by GitHub Actions, so the release
+workflow starts CI on the release pull request itself and checks its title. Give it a
+few minutes after the release pull request appears before merging.
+
 ## Writing skills
 
 - Front matter needs `name` (matching the folder) and a `description` that says when to

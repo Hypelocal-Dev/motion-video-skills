@@ -7,6 +7,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
+  statuses: write
 
 jobs:
   release-please:
@@ -20,6 +22,25 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # GitHub doesn't run workflows on pull requests opened with GITHUB_TOKEN, so the
+      # required checks never start on release-please's PR and branch protection blocks it.
+      # Start CI on the release branch by hand (workflow_dispatch is allowed), and run the
+      # PR title check here, reporting it under the same status name.
+      - name: Run required checks on the release PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          BRANCH=release-please--branches--main
+          PR=$(gh pr list --repo "$REPO" --head "$BRANCH" --state open --json title,headRefOid --jq '.[0] // empty')
+          [ -z "$PR" ] && { echo "no open release PR"; exit 0; }
+          TITLE=$(jq -r .title <<<"$PR"); SHA=$(jq -r .headRefOid <<<"$PR")
+          gh workflow run ci.yml --repo "$REPO" --ref "$BRANCH"
+          RE='^chore(\([a-z0-9-]+\))?: release .+'
+          if [[ "$TITLE" =~ $RE ]]; then STATE=success; else STATE=failure; fi
+          gh api "repos/$REPO/statuses/$SHA" -f state="$STATE" -f context="Conventional commit title" \
+            -f description="release-please PR title: $TITLE"
 
   samples:
     name: Attach sample renders
