@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.rp.outputs.release_created }}
+      tag: ${{ steps.rp.outputs.tag_name }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  samples:
+    name: Attach sample renders
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: [square-loop, wide-explainer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Render
+        working-directory: motion-video/templates/${{ matrix.template }}
+        run: npx --yes hyperframes render -q delivery -f 60 -o renders/${{ matrix.template }}.mp4
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.release-please.outputs.tag }}" motion-video/templates/${{ matrix.template }}/renders/${{ matrix.template }}.mp4 --clobber

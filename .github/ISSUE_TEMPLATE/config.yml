@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: HyperFrames questions
+    url: https://github.com/heygen-com/hyperframes/issues
+    about: Rendering engine bugs and framework questions belong in the HyperFrames repo.

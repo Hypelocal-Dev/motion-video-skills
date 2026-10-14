@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/validate.py
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python (ruff)
+        run: pip install ruff==0.8.4 && ruff check .
+      - name: Bash (shellcheck)
+        run: shellcheck -x motion-video/scripts/*.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Markdown
+        run: npx --yes markdownlint-cli2@0.17.2 "**/*.md"
+
+  templates:
+    name: Render templates
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        template: [square-loop, wide-explainer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Lint composition
+        working-directory: motion-video/templates/${{ matrix.template }}
+        run: npx --yes hyperframes lint
+      - name: Draft render
+        working-directory: motion-video/templates/${{ matrix.template }}
+        run: npx --yes hyperframes render -q draft -f 30 -o renders/draft.mp4
+      - name: Loudness
+        run: python3 motion-video/scripts/loudness.py motion-video/templates/${{ matrix.template }}/renders/draft.mp4
+      - name: Loop seam
+        if: matrix.template == 'square-loop'
+        run: python3 motion-video/scripts/loop_check.py motion-video/templates/${{ matrix.template }}/renders/draft.mp4

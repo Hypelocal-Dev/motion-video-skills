@@ -1,0 +1,15 @@
+name: Feature request
+description: A template, skill or script you'd like
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What are you trying to make?
+      description: Describe the video or step, not the solution you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Ideas for how it could work
