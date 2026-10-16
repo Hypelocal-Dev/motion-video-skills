@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.3.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.2.0...v0.3.0) (2026-10-16)
+
+
+### Features
+
+* add a local editor for leaving timed notes on renders ([#11](https://github.com/tjdotwal/motion-video-skills/issues/11)) ([e4d2417](https://github.com/tjdotwal/motion-video-skills/commit/e4d24177e0f2cda726dd901a8d7f4d53a9d676e3))
+
 ## [0.2.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.1.0...v0.2.0) (2026-10-14)
 
 
