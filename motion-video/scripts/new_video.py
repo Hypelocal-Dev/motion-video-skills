@@ -44,7 +44,7 @@ def main() -> None:
     if dest.exists() and any(dest.iterdir()):
         sys.exit(f"{dest} already exists and is not empty")
     shutil.copytree(TEMPLATES / args.template, dest, dirs_exist_ok=True,
-                    ignore=shutil.ignore_patterns("renders", ".hyperframes", "*.mp4"))
+                    ignore=shutil.ignore_patterns("renders", "review", ".hyperframes", "*.mp4"))
     slug = re.sub(r"[^a-z0-9]+", "-", dest.name.lower()).strip("-") or "video"
     (dest / "meta.json").write_text(json.dumps(
         {"id": slug, "name": slug, "createdAt": f"{date.today()}T00:00:00.000Z"}, indent=2) + "\n")

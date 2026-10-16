@@ -29,6 +29,9 @@ attached to every [release](https://github.com/tjdotwal/motion-video-skills/rele
   - A 1200x1200 looping hero with a persistent checklist.
   - A 1920x1080 explainer with word-by-word captions.
 - **QA tools.** Contact sheets, a loop-seam check and loudness checks.
+- **A local editor for notes.** Say "let's edit this" and the latest render opens in your
+  browser. Pin notes to exact frames, drag a box over the part you mean, and drop in an
+  image or GIF to put on screen. Claude works through the notes and replies on each one.
 
 ## Install
 
@@ -99,6 +102,12 @@ Or describe what you want and the `motion-video` skill takes over:
 Claude reads the brief, tells you what's missing, and shows draft frames before the
 final render. Every project keeps a `NOTES.md`, so you or a later session can pick it up.
 
+To give notes on a draft, say "let's edit this" or run `/edit-video`. The latest render
+opens in your browser. Pause where something should change and type a note. Drag on the
+frame to mark the area you mean, or drop in an image or GIF to put there. Click
+**Send to Claude** when you're done. Claude makes the changes, renders again and replies
+on each note. Everything stays on your machine.
+
 ## What's inside
 
 | Skill | Use it for |
@@ -107,12 +116,14 @@ final render. Every project keeps a `NOTES.md`, so you or a later session can pi
 | `voiceover` | Generating, fixing and timing narration |
 | `sound-bed` | Music and effects that hit on the cuts, plus loudness |
 | `video-qa` | Lint, contact sheets, loop and loudness checks, and the handover checklist |
+| `video-editor` | Leaving timed notes on a render in a local editor, and working through them |
 | `motion-techniques` | Patterns that make product videos feel continuous: one camera, a persistent element, a clean loop |
 
 | Command | What it does |
 | --- | --- |
 | `/new-video [template] [folder]` | Checks your setup, creates a project from a template, starts the brief |
 | `/video-doctor` | Checks HyperFrames, ffmpeg and the voice environment |
+| `/edit-video [folder]` | Opens the editor on the latest render so you can leave notes |
 
 | Script (`motion-video/scripts/`) | What it does |
 | --- | --- |
@@ -124,6 +135,7 @@ final render. Every project keeps a `NOTES.md`, so you or a later session can pi
 | `envelope.py`, `build_bed.py` | Map a track's hits and rebuild it to your cuts |
 | `synth_bed.py` | Generate a rights-free placeholder bed |
 | `contact_sheet.py`, `loop_check.py`, `loudness.py` | QA a render |
+| `edit_video.py` | Run the editor, wait for notes, print them and reply |
 
 ## Repository layout
 
@@ -131,7 +143,7 @@ final render. Every project keeps a `NOTES.md`, so you or a later session can pi
 .claude-plugin/marketplace.json   marketplace entry (what /plugin marketplace add reads)
 motion-video/                     the plugin
   .claude-plugin/plugin.json      plugin manifest (version lives here)
-  skills/                         the five skills
+  skills/                         the six skills
   commands/                       slash commands
   scripts/                        stdlib Python and Bash tools
   templates/                      ready-to-render starter projects
