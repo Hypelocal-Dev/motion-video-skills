@@ -1,6 +1,6 @@
 ---
 name: motion-video
-description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa and motion-techniques skills.
+description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor and motion-techniques skills.
 ---
 
 # Motion video
@@ -97,7 +97,14 @@ Read the template's `TEMPLATE.md`. Then:
 Use the **video-qa** skill. Draft-render at 30fps, look at contact sheets, fix, and
 repeat. Then do the final render at 60fps, with the loop and loudness checks.
 
-## 9. Deliver
+## 9. Edit with the person
+
+Use the **video-editor** skill. Open the editor on the newest draft so the person can pin
+notes to frames, mark areas and drop in images or GIFs. Work through each round of notes,
+render again and reply on each note until they're happy. Do this whenever they say
+"let's edit this", even after delivery.
+
+## 10. Deliver
 
 - Final render: `npx hyperframes render -q delivery -f 60 -o renders/<Name>.mp4`, then
   copy it to the delivery folder.

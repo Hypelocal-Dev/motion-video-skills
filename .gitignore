@@ -22,9 +22,10 @@ renders/
 *.mp4
 *.mov
 
-# Scratch files from QA scripts
+# Scratch files from QA scripts and the editor
 *.contact.png
 transcript.json
+motion-video/templates/*/review/
 
 # Local env files
 .env
