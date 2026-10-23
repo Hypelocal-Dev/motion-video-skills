@@ -1,6 +1,6 @@
 ---
 name: motion-video
-description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor and motion-techniques skills.
+description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor, motion-techniques and archive-media skills.
 ---
 
 # Motion video
@@ -56,6 +56,8 @@ that says its angle (`-search`, `-switchers`, `-short`).
 - Crop people photos tight, and make sure no banned text from the source image survives
   the crop.
 - Keep the source files in `assets/incoming/` and copy what you use into `assets/`.
+- If the brief calls for archival b-roll or period music, use the **archive-media** skill
+  to find it in the Prelinger and 78rpm collections before generating anything.
 
 ## 4. Voiceover
 
