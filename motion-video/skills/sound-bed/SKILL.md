@@ -10,7 +10,8 @@ Scripts are in `<base dir>/../../scripts` (call it `$MV`).
 ## Rights first
 
 Use only audio you have the right to use: a licensed track, the client's own audio,
-something you generated, or `$MV/synth_bed.py` for a placeholder. Note the source and
+something you generated, a public-domain 78 from the **archive-media** skill for period
+music, or `$MV/synth_bed.py` for a placeholder. Note the source and
 license in the project's `NOTES.md`.
 
 ## Separate music from a voiced reference (optional)

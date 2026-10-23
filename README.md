@@ -118,6 +118,7 @@ on each note. Everything stays on your machine.
 | `video-qa` | Lint, contact sheets, loop and loudness checks, and the handover checklist |
 | `video-editor` | Leaving timed notes on a render in a local editor, and working through them |
 | `motion-techniques` | Patterns that make product videos feel continuous: one camera, a persistent element, a clean loop |
+| `archive-media` | Archival b-roll from Prelinger and period music from the 78rpm collection, with rights checked |
 
 | Command | What it does |
 | --- | --- |
@@ -136,6 +137,7 @@ on each note. Everything stays on your machine.
 | `synth_bed.py` | Generate a rights-free placeholder bed |
 | `contact_sheet.py`, `loop_check.py`, `loudness.py` | QA a render |
 | `edit_video.py` | Run the editor, wait for notes, print them and reply |
+| `archive_media.py` | Search the Internet Archive, cut a clip into the project and credit it |
 
 ## Repository layout
 
@@ -143,7 +145,7 @@ on each note. Everything stays on your machine.
 .claude-plugin/marketplace.json   marketplace entry (what /plugin marketplace add reads)
 motion-video/                     the plugin
   .claude-plugin/plugin.json      plugin manifest (version lives here)
-  skills/                         the six skills
+  skills/                         the seven skills
   commands/                       slash commands
   scripts/                        stdlib Python and Bash tools
   templates/                      ready-to-render starter projects

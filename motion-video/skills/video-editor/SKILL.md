@@ -74,6 +74,9 @@ time if it covers a stretch, the text, the marked area, attached files and a sti
 
   Don't put timing on a wrapper around a `<video>` (lint rejects it), and don't add
   `crossorigin`.
+- **Archival footage or period music** ("old newsreel here", "1920s music under
+  this"): use the **archive-media** skill. It finds a clip in the Prelinger or 78rpm
+  collections and cuts it into `assets/archive/`.
 - **A sound at a moment:** an `<audio>` with an `id` at that time, then re-check loudness
   with the sound-bed skill.
 - **Timing notes** ("land a beat later", "hold longer"): move the tweens and keep each
