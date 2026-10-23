@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.4.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.3.0...v0.4.0) (2026-10-23)
+
+
+### Features
+
+* find archival b-roll and period music on the Internet Archive ([#13](https://github.com/tjdotwal/motion-video-skills/issues/13)) ([0efdcf6](https://github.com/tjdotwal/motion-video-skills/commit/0efdcf6848ac8a7fdb54b0be2eb31cab0c514d3e))
+
 ## [0.3.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.2.0...v0.3.0) (2026-10-16)
 
 
