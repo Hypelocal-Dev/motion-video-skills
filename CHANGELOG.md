@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.5.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.4.0...v0.5.0) (2026-10-26)
+
+
+### Features
+
+* add a reference folder for videos to borrow styles and elements from ([#15](https://github.com/tjdotwal/motion-video-skills/issues/15)) ([f1f9019](https://github.com/tjdotwal/motion-video-skills/commit/f1f901962724aff3a03ab718276b03116195ede9))
+
 ## [0.4.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.3.0...v0.4.0) (2026-10-23)
 
 
