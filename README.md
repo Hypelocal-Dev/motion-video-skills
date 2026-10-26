@@ -32,6 +32,8 @@ attached to every [release](https://github.com/tjdotwal/motion-video-skills/rele
 - **A local editor for notes.** Say "let's edit this" and the latest render opens in your
   browser. Pin notes to exact frames, drag a box over the part you mean, and drop in an
   image or GIF to put on screen. Claude works through the notes and replies on each one.
+- **A reference folder.** Save videos you like into one folder. Then say "use
+  spinny-logo for the logo reveal" and Claude studies that clip and builds the element.
 
 ## Install
 
@@ -108,6 +110,17 @@ frame to mark the area you mean, or drop in an image or GIF to put there. Click
 **Send to Claude** when you're done. Claude makes the changes, renders again and replies
 on each note. Everything stays on your machine.
 
+To work from references, save videos into `~/Documents/motion-references` (or set
+`MV_REFERENCES` to another folder). Use subfolders if you like. To point at a moment,
+put a note next to the video in a file with the same name, such as `spinny-logo.md`
+containing "the text wipe at 0:04". Then name the video in a request:
+
+> Use spinny-logo for the logo reveal, and match the type from kinetic-words.
+
+Claude makes a contact sheet of each new video, writes a breakdown of the parts you
+point at, and reuses that breakdown in later sessions. Run `/references` to see what's
+in the folder, or `/references grain` to search it.
+
 ## What's inside
 
 | Skill | Use it for |
@@ -119,12 +132,14 @@ on each note. Everything stays on your machine.
 | `video-editor` | Leaving timed notes on a render in a local editor, and working through them |
 | `motion-techniques` | Patterns that make product videos feel continuous: one camera, a persistent element, a clean loop |
 | `archive-media` | Archival b-roll from Prelinger and period music from the 78rpm collection, with rights checked |
+| `reference-library` | Studying videos from your reference folder and rebuilding the parts you name |
 
 | Command | What it does |
 | --- | --- |
 | `/new-video [template] [folder]` | Checks your setup, creates a project from a template, starts the brief |
 | `/video-doctor` | Checks HyperFrames, ffmpeg and the voice environment |
 | `/edit-video [folder]` | Opens the editor on the latest render so you can leave notes |
+| `/references [name or search]` | Indexes new videos in your reference folder, then lists, shows or searches them |
 
 | Script (`motion-video/scripts/`) | What it does |
 | --- | --- |
@@ -138,6 +153,7 @@ on each note. Everything stays on your machine.
 | `contact_sheet.py`, `loop_check.py`, `loudness.py` | QA a render |
 | `edit_video.py` | Run the editor, wait for notes, print them and reply |
 | `archive_media.py` | Search the Internet Archive, cut a clip into the project and credit it |
+| `references.py` | Index, search and make close-up contact sheets of your reference videos |
 
 ## Repository layout
 

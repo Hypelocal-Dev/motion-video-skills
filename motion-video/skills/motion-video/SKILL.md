@@ -1,6 +1,6 @@
 ---
 name: motion-video
-description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor, motion-techniques and archive-media skills.
+description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor, motion-techniques, archive-media and reference-library skills.
 ---
 
 # Motion video
@@ -34,6 +34,8 @@ Get these answered from the brief or the person. Ask only for what's missing.
   claims, numbers, prices or competitor names allowed? Is there banned UI (ads, upsells)?
 - **Assets.** Logos, icons, product screenshots, people photos, a reference video, a
   music track and its license.
+- **References.** If the person names a video from their reference folder, or says "like
+  the one I saved", use the **reference-library** skill to find and study it.
 
 If several versions exist, never overwrite one. Give each a new project and file name
 that says its angle (`-search`, `-switchers`, `-short`).
