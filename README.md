@@ -59,14 +59,10 @@ HyperFrames marketplace fails with `git-lfs: command not found`.
 HyperFrames installs automatically as a dependency. The HyperFrames marketplace has to be
 added first, or the install stops and tells you to add it.
 
-**2. Set up the voice environment:**
-
-```text
-/video-doctor
-```
-
-It checks your machine and offers to run the setup, which installs Kokoro into
-`~/.motion-video/venv`. It never uses sudo.
+**2. Start a new Claude Code session.** If anything is missing, Claude says so and offers
+to walk you through setup. It installs the missing tools with your OK, sets up the voice
+environment in `~/.motion-video/venv` and makes a test render. It never uses sudo. To
+run the walkthrough any time, say "set me up for motion video" or run `/video-doctor`.
 
 **3. Optional: install a plain-writing editor** for scripts Claude writes:
 
@@ -133,6 +129,7 @@ in the folder, or `/references grain` to search it.
 | `motion-techniques` | Patterns that make product videos feel continuous: one camera, a persistent element, a clean loop |
 | `archive-media` | Archival b-roll from Prelinger and period music from the 78rpm collection, with rights checked |
 | `reference-library` | Studying videos from your reference folder and rebuilding the parts you name |
+| `setup` | Walking a new install through setup, one checked step at a time |
 
 | Command | What it does |
 | --- | --- |
@@ -161,8 +158,9 @@ in the folder, or `/references grain` to search it.
 .claude-plugin/marketplace.json   marketplace entry (what /plugin marketplace add reads)
 motion-video/                     the plugin
   .claude-plugin/plugin.json      plugin manifest (version lives here)
-  skills/                         the seven skills
+  skills/                         the skills
   commands/                       slash commands
+  hooks/                          session-start setup check
   scripts/                        stdlib Python and Bash tools
   templates/                      ready-to-render starter projects
 scripts/                          repo tooling (validation for CI)
