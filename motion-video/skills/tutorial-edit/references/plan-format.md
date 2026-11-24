@@ -88,7 +88,7 @@ index). Times inside lists are local to the overlay.
   "dark": "#16161F", "soft": "#8E8FA6", "warn": "#E5484D", "bg": "#E8EEFF",
   "chip_label": "#9DB4FF",
   "head_font": "Poppins", "body_font": "Inter",
-  "wordmark": "acme", "logo": "brand/logo.svg"
+  "wordmark": "acme", "logo": "brand/logo-black.svg", "logo_on_dark": "brand/logo-white.svg"
 }
 ```
 
@@ -99,5 +99,7 @@ index). Times inside lists are local to the overlay.
   font that isn't on Google Fonts, put the `.woff2` in `edit/assets/fonts/` and map it:
   `"font_files": {"Acme Sans": "assets/fonts/acme-sans.woff2"}`, then use
   `"head_font": "Acme Sans"`.
-- `logo`: a project-relative path; the generator copies it into `edit/assets/brand/`.
+- `logo`: the logo for light backgrounds (the agenda slide). `logo_on_dark`: the version
+  for dark backgrounds (the end card); leave it out when one full-color logo works on
+  both. Paths are project-relative; the generator copies them into `edit/assets/brand/`.
   Without a logo, `wordmark` is set in the head font.

@@ -38,13 +38,15 @@ Map the palette onto the theme keys (format: `plan-format.md`):
 - `head_font` / `body_font`: the brand's heading and body fonts. Check each is on Google
   Fonts; if not, pick the nearest family and say so.
 - `wordmark`: the brand name as the logo writes it. `logo`: the logo file in `brand/`
-  (SVG first). A logo PNG needs a transparent background.
+  for light backgrounds (SVG first), and `logo_on_dark` for the light-colored version
+  when the brand has one. A logo PNG needs a transparent background. Open an SVG and
+  check it holds paths, not a wrapped PNG.
 
 Never redraw a logo with text when a logo file exists. If there's no file, use the
 wordmark and tell the person the logo is a stand-in.
 
 ## 3. Confirm and save
 
-Show the palette as one line (`ink #455CFF, deep #1A33AF, ...`) and the fonts. After a
+Show the palette as one line (`ink #2F6BFF, deep #123A9C, ...`) and the fonts. After a
 yes, save the kit: `python3 $MV/tutorial_new.py brand-save <name> <folder>`. The next
 project starts with `--brand <name>`. Kits stay on this machine; never commit one.

@@ -28,7 +28,7 @@ THEME = {  # neutral defaults; override any key in plan["theme"] (e.g. from the 
     "ink": "#455CFF", "deep": "#1A33AF", "paper": "#F6F8FF", "line": "#D9E8FF", "dark": "#1F1F2B",
     "soft": "#9696AE", "warn": "#E5484D", "bg": "#E9EEFF", "chip_label": "#8FA0FF",
     "head_font": "Poppins", "body_font": "Inter", "note_font_file": "assets/fonts/caveat-latin.woff2",
-    "wordmark": "", "logo": "",
+    "wordmark": "", "logo": "", "logo_on_dark": "",
 }
 E = html.escape
 
@@ -44,16 +44,17 @@ class Build:
         brand_file = os.path.join(project, "brand", "theme.json")
         brand = json.load(open(brand_file)) if os.path.exists(brand_file) else {}
         self.t = {**THEME, **brand, **self.plan.get("theme", {})}
-        logo = self.t.get("logo", "")
-        if logo and not logo.startswith("assets/"):  # brand/logo.svg -> edit/assets/brand/logo.svg
-            src = os.path.join(project, logo)
-            if os.path.exists(src):
-                os.makedirs(os.path.join(self.edit, "assets", "brand"), exist_ok=True)
-                shutil.copy2(src, os.path.join(self.edit, "assets", "brand", os.path.basename(src)))
-                self.t["logo"] = "assets/brand/" + os.path.basename(src)
-            else:
-                print(f"warning: logo {src} not found; using the wordmark text")
-                self.t["logo"] = ""
+        for key in ("logo", "logo_on_dark"):  # brand/logo.svg -> edit/assets/brand/logo.svg
+            logo = self.t.get(key, "")
+            if logo and not logo.startswith("assets/"):
+                src = os.path.join(project, logo)
+                if os.path.exists(src):
+                    os.makedirs(os.path.join(self.edit, "assets", "brand"), exist_ok=True)
+                    shutil.copy2(src, os.path.join(self.edit, "assets", "brand", os.path.basename(src)))
+                    self.t[key] = "assets/brand/" + os.path.basename(src)
+                else:
+                    print(f"warning: {key} {src} not found; using the wordmark text")
+                    self.t[key] = ""
         self.dur = round(json.load(open(os.path.join(self.work, "spine_map.json")))[-1]["end"], 3)
         self.hosts: list[str] = []
         self.sfx: list[tuple[float, str]] = []
@@ -118,10 +119,11 @@ svg .ink2 {{ fill: none; stroke: {t['soft']}; stroke-width: 4; stroke-linecap: r
         self.hosts.append(f'    <div id="{cid}" class="clip" data-composition-id="{cid}" data-composition-src="compositions/{cid}.html"{extra} '
                           f'data-start="{start}" data-duration="{dur}" data-track-index="{track}" data-width="1920" data-height="1080"></div>')
 
-    def wordmark(self, size: int, color: str) -> str:
+    def wordmark(self, size: int, color: str, on_dark: bool = False) -> str:
         t = self.t
-        if t["logo"]:
-            return f'<img src="{E(t["logo"])}" style="height:{size * 1.3}px" alt="" />'
+        logo = (t.get("logo_on_dark") or t.get("logo")) if on_dark else t.get("logo")
+        if logo:
+            return f'<img src="{E(logo)}" style="height:{size * 1.3}px;width:auto" alt="{E(t["wordmark"])}" />'
         return f'<span class="head" style="font-weight:600;font-size:{size}px;color:{color};letter-spacing:-.02em">{E(t["wordmark"])}</span>'
 
     # ------------------------------------------------------------------ agenda
@@ -238,7 +240,7 @@ svg .ink2 {{ fill: none; stroke: {t['soft']}; stroke-width: 4; stroke-linecap: r
         dur = o.get("dur", round(self.dur - start, 3))
         body = f"""        <div style="position:absolute;inset:0;background:{t['dark']}"></div>
         <div class="glow" style="position:absolute;width:1500px;height:1500px;left:210px;top:-200px;border-radius:50%;background:radial-gradient(circle,{t['ink']}80,{t['ink']}00 62%)"></div>
-        <div class="wm" style="position:absolute;left:0;right:0;top:470px;text-align:center">{self.wordmark(76, t['paper'])}</div>
+        <div class="wm" style="position:absolute;left:0;right:0;top:470px;text-align:center">{self.wordmark(76, t['paper'], on_dark=True)}</div>
         <div class="cta" style="position:absolute;left:0;right:0;top:620px;text-align:center;font:500 36px {t['body_font']};color:{t['soft']}">{E(o.get('cta', ''))}</div>"""
         sc = """          tl.fromTo("#root", {opacity:0}, {opacity:1, duration:.4}, 0);
           tl.fromTo(".wm", {opacity:0, y:20, scale:.9}, {opacity:1, y:0, scale:1, duration:.6, ease:"back.out(1.5)"}, .2);
