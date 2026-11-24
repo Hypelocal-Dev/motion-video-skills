@@ -24,7 +24,10 @@ speed, e.g. 1.15), captions (false to turn off), and layout fields:
   center  crop the middle (talking head, single subject)
   stack   whole 16:9 frame in the middle, title above, captions below (screen recordings)
   focus   "focus": [[t, x, y, zoom], ...] clip-local seconds, source pixels; the window
-          eases between points (follow the cursor or the part of the UI being discussed)
+          eases between points (follow the cursor or the part of the UI being discussed).
+          Zoom below 1 shows a wider window than 9:16 allows: the picture sits at the
+          bottom and leaves a band above it for the title. 0.75-0.9 fits a whole chat or
+          document column at a readable size.
   pan     "speakers": "path.json" from clips_speakers.py, "left": x, "right": x (source
           pixel centers of each face); hard cuts to whoever is talking
   split   "speakers" as above, "boxes": {"left": [x,y,w,h], "right": [x,y,w,h]} around
