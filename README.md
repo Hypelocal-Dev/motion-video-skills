@@ -37,6 +37,9 @@ attached to every [release](https://github.com/tjdotwal/motion-video-skills/rele
   side panels instead of watching someone type, sketch diagrams, fast-forwards over the
   waiting, captions, zooms, a privacy sweep and a carved music bed. Brand kits from
   your guidelines are saved and reused.
+- **Clips from any long video.** Claude finds the moments worth posting, checks every
+  frame, reframes for 9:16 (stacked, focus-follow, center, speaker pan or split), adds
+  big word-by-word captions and a title, and renders each clip in your brand colors.
 - **A reference folder.** Save videos you like into one folder. Then say "use
   spinny-logo for the logo reveal" and Claude studies that clip and builds the element.
 
@@ -122,6 +125,9 @@ and logo. It cuts the recording down, sweeps it for private screens, plans the g
 shows you stills, then renders. Save a brand once with `tutorial_new.py brand-save` and
 start the next project with `--brand <name>`.
 
+For social cuts, say "make clips from this" or run `/clips`. After a tutorial edit,
+clips come from the cut version and reuse its brand and privacy covers.
+
 To work from references, save videos into `~/Documents/motion-references` (or set
 `MV_REFERENCES` to another folder). Use subfolders if you like. To point at a moment,
 put a note next to the video in a file with the same name, such as `spinny-logo.md`
@@ -146,6 +152,7 @@ in the folder, or `/references grain` to search it.
 | `archive-media` | Archival b-roll from Prelinger and period music from the 78rpm collection, with rights checked |
 | `reference-library` | Studying videos from your reference folder and rebuilding the parts you name |
 | `tutorial-edit` | Turning a long narrated screen recording into a branded tutorial |
+| `clips` | Finding the best moments in a long video and cutting captioned vertical clips |
 | `setup` | Walking a new install through setup, one checked step at a time |
 
 | Command | What it does |
@@ -154,6 +161,7 @@ in the folder, or `/references grain` to search it.
 | `/video-doctor` | Checks HyperFrames, ffmpeg and the voice environment |
 | `/edit-video [folder]` | Opens the editor on the latest render so you can leave notes |
 | `/tutorial [folder] [recording]` | Sets up a tutorial-edit project and asks for footage, inspo and brand files |
+| `/clips [video] [how many]` | Finds moments in a longer video and cuts them into captioned clips |
 | `/references [name or search]` | Indexes new videos in your reference folder, then lists, shows or searches them |
 
 | Script (`motion-video/scripts/`) | What it does |
@@ -173,6 +181,9 @@ in the folder, or `/references grain` to search it.
 | `tutorial_cut.py` | Find pauses, cut the recording into a spine, sweep for private screens, map times |
 | `tutorial_gen.py`, `tutorial_build.sh` | Build the HyperFrames composition from `plan.json` and lint it |
 | `tutorial_bed.py`, `tutorial_mix.py` | Synthesize a rights-free lo-fi bed and effects; carve it under the voice |
+| `clips_find.py` | Print a transcript as timed lines; contact sheet per planned clip |
+| `clips_make.py` | Build and render one captioned HyperFrames project per clip |
+| `clips_speakers.py`, `clips_transients.py` | Who's talking when (for speaker pans); impact sounds for montages |
 
 ## Repository layout
 
@@ -203,6 +214,10 @@ Changes go through pull requests, and CI must pass first. See
 - [no-ai-slop](https://github.com/petergyang/no-ai-slop) by Peter Yang (MIT) is the
   optional writing editor.
 - Voice: [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M) through `kokoro-onnx`.
+- [clipify](https://github.com/louisedesadeleer/clipify) by Louise de Sadeleer (MIT) is
+  the basis of the `clips` skill's moment-finding signals, speaker pan and impact
+  detector. Its license is in
+  [clips/references/clipify-license.txt](motion-video/skills/clips/references/clipify-license.txt).
 
 ## License
 
