@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.8.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.7.0...v0.8.0) (2026-11-24)
+
+
+### Features
+
+* prep tutorial projects for clips and frame chat UIs readably ([#22](https://github.com/Hypelocal-Dev/motion-video-skills/issues/22)) ([aaf16cd](https://github.com/Hypelocal-Dev/motion-video-skills/commit/aaf16cd2e766622225af1f7fb96e52f9c7937e34))
+
 ## [0.7.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.6.0...v0.7.0) (2026-11-24)
 
 
