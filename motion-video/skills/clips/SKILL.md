@@ -15,9 +15,12 @@ picking moments.
 
 ## 1. Inputs
 
-- **Source video.** After a tutorial edit, use the cut spine (`edit/assets/spine.mp4`)
-  and its words (`work/spine_words.json`), not the raw recording, so the pauses are
-  already gone. Otherwise any video works.
+- **Source video.** After a tutorial edit, use the cut spine (`edit/assets/spine.mp4`),
+  not the raw recording, so the pauses are already gone. Run
+  `python3 $MV/clips_find.py prep <project>` first: it re-transcribes the spine when its
+  word timings are missing or older than the spine (a re-cut makes old timings wrong),
+  and writes a `clips.json` skeleton with the brand theme, caption names and privacy
+  covers. Otherwise any video works.
 - **Word timings.** If there's no transcript yet: `npx hyperframes transcribe <video> -d <dir>`.
 - **Brand.** Use the project's `brand/theme.json` if there is one. If not, ask for brand
   colors or a saved kit (`tutorial_new.py brand-list`), the same as tutorial-edit.
@@ -45,10 +48,10 @@ picking moments.
 
 1. Write `clips.json` next to the source project (format in `$MV/clips_make.py --help`).
    Start and end on sentence boundaries: use the word times, never a guess.
-2. **Privacy covers.** When cutting from a tutorial edit, copy `work/plan.json`
-   `covers` into `clips.json` `covers`.
-3. `python3 $MV/clips_find.py frames clips.json` makes a sheet per clip. Look at every
-   one. Drop or move a clip when:
+2. **Privacy covers.** `prep` copies the tutorial's covers. For other sources, add any
+   you need.
+3. `python3 $MV/clips_find.py frames clips.json` makes a sheet per clip, 8 frames large
+   enough to read screen text. Look at every one. Drop or move a clip when:
    - the moment isn't on screen (audio finds the sound, not the picture), or the subject
      is out of frame;
    - anything private shows. Tutorial covers only protect what the tutorial showed: a
@@ -57,10 +60,15 @@ picking moments.
 
 ## 5. Choose a layout per clip
 
-- **Screen recordings:** `stack` (the whole frame, title above, captions below) when the
-  viewer needs to see the UI; `focus` with keyframes when one area matters (follow the
-  cursor or the panel being discussed; zoom 1.2-1.6). Never plain `center` on a screen
-  recording: it crops the middle of the UI.
+- **Screen recordings of chat, docs or long text** (the usual tutorial): `focus` at zoom
+  0.75-0.9, centered on the text column. It shows the whole column at a size a phone can
+  read and leaves a band at the top for the title. Measure the column's center and width
+  on a full-size frame; the window is about 607/zoom source pixels wide.
+- **Screen recordings where one small area matters** (a button, a setting, a chart):
+  `focus` with keyframes that follow it, zoom 1.2-1.6.
+- **Screen recordings where the whole layout matters:** `stack`. Its text is small on a
+  phone, so use it only when the layout is the point.
+- Never plain `center` on a screen recording: it crops the middle of the UI.
 - **One person on camera:** `center`. Check the face sits in the middle third.
 - **Two people:** `pan` (hard cuts to whoever talks) or `split` (both visible, the active
   speaker on top). Get speaker turns first: sample a frame, put a box over each mouth
