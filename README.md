@@ -32,6 +32,11 @@ attached to every [release](https://github.com/tjdotwal/motion-video-skills/rele
 - **A local editor for notes.** Say "let's edit this" and the latest render opens in your
   browser. Pin notes to exact frames, drag a box over the part you mean, and drop in an
   image or GIF to put on screen. Claude works through the notes and replies on each one.
+- **Tutorial edits from long recordings.** Drop in a 10-60 minute screen recording and
+  get a tight, branded tutorial: an agenda opener, chapter cards that track progress,
+  side panels instead of watching someone type, sketch diagrams, fast-forwards over the
+  waiting, captions, zooms, a privacy sweep and a carved music bed. Brand kits from
+  your guidelines are saved and reused.
 - **A reference folder.** Save videos you like into one folder. Then say "use
   spinny-logo for the logo reveal" and Claude studies that clip and builds the element.
 
@@ -106,6 +111,17 @@ frame to mark the area you mean, or drop in an image or GIF to put there. Click
 **Send to Claude** when you're done. Claude makes the changes, renders again and replies
 on each note. Everything stays on your machine.
 
+To edit a long recording someone narrated, run `/tutorial ~/videos/crm-setup` or say:
+
+> Here's a 25 minute screen recording of me setting up our CRM automation. Turn it into
+> a tutorial.
+
+Claude sets up the project (`footage/`, `inspo/`, `brand/`, `work/`, `edit/`, `renders/`)
+and asks for the recording, 2-3 videos whose style you like, and your brand guidelines
+and logo. It cuts the recording down, sweeps it for private screens, plans the graphics,
+shows you stills, then renders. Save a brand once with `tutorial_new.py brand-save` and
+start the next project with `--brand <name>`.
+
 To work from references, save videos into `~/Documents/motion-references` (or set
 `MV_REFERENCES` to another folder). Use subfolders if you like. To point at a moment,
 put a note next to the video in a file with the same name, such as `spinny-logo.md`
@@ -129,6 +145,7 @@ in the folder, or `/references grain` to search it.
 | `motion-techniques` | Patterns that make product videos feel continuous: one camera, a persistent element, a clean loop |
 | `archive-media` | Archival b-roll from Prelinger and period music from the 78rpm collection, with rights checked |
 | `reference-library` | Studying videos from your reference folder and rebuilding the parts you name |
+| `tutorial-edit` | Turning a long narrated screen recording into a branded tutorial |
 | `setup` | Walking a new install through setup, one checked step at a time |
 
 | Command | What it does |
@@ -136,6 +153,7 @@ in the folder, or `/references grain` to search it.
 | `/new-video [template] [folder]` | Checks your setup, creates a project from a template, starts the brief |
 | `/video-doctor` | Checks HyperFrames, ffmpeg and the voice environment |
 | `/edit-video [folder]` | Opens the editor on the latest render so you can leave notes |
+| `/tutorial [folder] [recording]` | Sets up a tutorial-edit project and asks for footage, inspo and brand files |
 | `/references [name or search]` | Indexes new videos in your reference folder, then lists, shows or searches them |
 
 | Script (`motion-video/scripts/`) | What it does |
@@ -151,6 +169,10 @@ in the folder, or `/references grain` to search it.
 | `edit_video.py` | Run the editor, wait for notes, print them and reply |
 | `archive_media.py` | Search the Internet Archive, cut a clip into the project and credit it |
 | `references.py` | Index, search and make close-up contact sheets of your reference videos |
+| `tutorial_new.py` | Set up a tutorial project; save and reuse brand kits |
+| `tutorial_cut.py` | Find pauses, cut the recording into a spine, sweep for private screens, map times |
+| `tutorial_gen.py`, `tutorial_build.sh` | Build the HyperFrames composition from `plan.json` and lint it |
+| `tutorial_bed.py`, `tutorial_mix.py` | Synthesize a rights-free lo-fi bed and effects; carve it under the voice |
 
 ## Repository layout
 

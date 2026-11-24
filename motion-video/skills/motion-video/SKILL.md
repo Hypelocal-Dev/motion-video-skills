@@ -1,9 +1,12 @@
 ---
 name: motion-video
-description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor, motion-techniques, archive-media and reference-library skills.
+description: End-to-end workflow for making a narrated product or UI motion video (landing-page hero, explainer, social cut) with HyperFrames. Use when someone asks for a motion video, animated explainer, hero video or product animation from a brief, a landing page, a script or a reference video. Covers brief intake, script, voiceover, sound bed, composition, QA and delivery, and routes to the voiceover, sound-bed, video-qa, video-editor, motion-techniques, archive-media and reference-library skills. For editing a long screen recording someone already narrated, use tutorial-edit instead.
 ---
 
 # Motion video
+
+> Editing an existing long recording (a tutorial, walkthrough or demo someone narrated)?
+> That's the **tutorial-edit** skill, not this workflow.
 
 Turn a brief into a finished MP4: script, voiceover, sound bed, an animated HTML
 composition rendered by HyperFrames, and a QA pass before anyone sees it.
