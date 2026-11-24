@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.7.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.6.0...v0.7.0) (2026-11-24)
+
+
+### Features
+
+* add clips for cutting captioned vertical clips from long videos ([#20](https://github.com/Hypelocal-Dev/motion-video-skills/issues/20)) ([c0d3e25](https://github.com/Hypelocal-Dev/motion-video-skills/commit/c0d3e2536dc6521adb301a0f4d07a11194769321))
+* add tutorial-edit for long narrated screen recordings ([#19](https://github.com/Hypelocal-Dev/motion-video-skills/issues/19)) ([7e661bd](https://github.com/Hypelocal-Dev/motion-video-skills/commit/7e661bdb3645e12acb6df32bc5ca56aebc043e0d))
+
 ## [0.6.0](https://github.com/tjdotwal/motion-video-skills/compare/v0.5.0...v0.6.0) (2026-10-29)
 
 
