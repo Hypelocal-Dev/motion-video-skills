@@ -3,6 +3,19 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.9.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.8.0...v0.9.0) (2026-11-25)
+
+
+### Features
+
+* add an event layout for sports and event highlight clips ([#24](https://github.com/Hypelocal-Dev/motion-video-skills/issues/24)) ([2f000c6](https://github.com/Hypelocal-Dev/motion-video-skills/commit/2f000c6e438b0d741a2c17326ecaab03117261ad))
+* match rough motion ideas to named techniques, with MotionVideo as a reference ([#25](https://github.com/Hypelocal-Dev/motion-video-skills/issues/25)) ([e3d98a6](https://github.com/Hypelocal-Dev/motion-video-skills/commit/e3d98a6c8896f089c03e3981b9840cffd24d9e97))
+
+
+### Bug Fixes
+
+* put event callouts on the picture so no empty gap opens above the sponsor ([#26](https://github.com/Hypelocal-Dev/motion-video-skills/issues/26)) ([f579cae](https://github.com/Hypelocal-Dev/motion-video-skills/commit/f579cae6b106c6fd93a5e372f46cd09d8130620a))
+
 ## [0.8.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.7.0...v0.8.0) (2026-11-24)
 
 
