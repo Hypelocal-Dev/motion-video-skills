@@ -9,7 +9,8 @@ clips.json (paths relative to the file):
     "source": "edit/assets/spine.mp4",      # the video to cut from
     "words": "work/spine_words.json",       # word timings for that video (optional; no captions without it)
     "theme": "brand/theme.json",            # optional brand colors and fonts
-    "format": "9:16",                       # 9:16 (1080x1920), 1:1 (1080x1080) or 16:9 (1920x1080)
+    "format": "9:16",                       # 9:16 (1080x1920), 1:1 (1080x1080), 16:9 (1920x1080) or any "WxH" like "1200x1200"
+    "loudness": -14,                        # optional: normalize each render to this LUFS (quiet event or room audio)
     "out": "clips",                         # projects go in out/<name>/, renders in out/renders/
     "captions": {"proper": {}, "fixes": [[from, to, heard, replacement]], "lowercase": true},
     "covers": [[start, end, clean_media_start]],   # privacy covers in source seconds (copy plan.covers)
@@ -32,6 +33,23 @@ speed, e.g. 1.15), captions (false to turn off), and layout fields:
           pixel centers of each face); hard cuts to whoever is talking
   split   "speakers" as above, "boxes": {"left": [x,y,w,h], "right": [x,y,w,h]} around
           each face; both on screen, active speaker on top
+  event   wide event or sports footage with a broadcast score bar (fight nights, games,
+          races). The full-width shot sits in a band over a blurred copy of itself, the
+          score bar is cut out and pinned under the band so it's always readable, and
+          "punch": [[from, to, x, y, zoom], ...] (clip-local seconds, source pixels,
+          zoom 1.3-1.6 on 720p) punches in on big moves. Spec-level "scorebar":
+          [x, y, w, h] in source pixels, optional "scorebar_scale" (default 1.35) and
+          "margin" (px on every side; default 4.5% of the short side). Tag, title,
+          picture, callout slot and sponsor are spaced evenly down the frame.
+
+Extras for any layout:
+  "tag": "GAME 3 · HAWKS VS RAVENS"         small pill above the title
+  "callouts": [[t, "TAKEDOWN", "+2"], ...]  pop-in labels at clip-local seconds
+Spec-level extras:
+  "sponsor": {"logo": "brand/logo.png", "label": "Presented by"}   small credit near the bottom
+  "endcard": {"logo": "brand/logo.png", "line": "Tagline", "dur": 2.2}  added after the clip
+  theme "font_files": {"Family": "brand/fonts/x.woff2"} (or {"Family": {"400": file, "900": file}}
+  for static weights) are bundled so renders use the brand font.
 
 Reframing and caption approach adapted from clipify by Louise de Sadeleer (MIT License).
 """
@@ -101,7 +119,9 @@ def fit(x, lo, hi):
 
 
 def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
-    W, H = SIZES[spec.get("format", "9:16")]
+    fmt = spec.get("format", "9:16")
+    W, H = SIZES[fmt] if fmt in SIZES else tuple(int(n) for n in fmt.lower().split("x"))
+    tall = H > W * 1.3
     src = os.path.normpath(os.path.join(spec_dir, spec["source"]))
     sw, sh = probe(src)
     rate = float(clip.get("rate", 1))
@@ -117,6 +137,23 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
         except OSError:
             shutil.copy2(src, media)
     t = theme
+
+    def asset(rel):  # copy a brand file into the clip project and return its project path
+        srcf = os.path.normpath(os.path.join(spec_dir, rel))
+        dst = os.path.join(proj, "assets", "brand", os.path.basename(srcf))
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        if not os.path.exists(dst) or os.path.getmtime(dst) < os.path.getmtime(srcf):
+            shutil.copy2(srcf, dst)
+        return "assets/brand/" + os.path.basename(srcf)
+
+    faces = ""  # a family maps to one file (any weight) or {"400": file, "900": file}
+    for fam, f in t.get("font_files", {}).items():
+        for wt, p in (f.items() if isinstance(f, dict) else [("100 900", f)]):
+            faces += f"@font-face {{ font-family: '{fam}'; src: url('{asset(p)}') format('woff2'); font-weight: {wt}; }}\n      "
+    ec = spec.get("endcard")
+    clip_dur = dur
+    if ec:
+        dur = round(dur + float(ec.get("dur", 2.2)), 3)  # footage keeps rolling under the card
     rate_attr = f' data-playback-rate="{rate}"' if rate != 1 else ""
     vid = f'data-start="0" data-duration="{dur}" data-media-start="{clip["start"]}"{rate_attr} playsinline'
     js, body, cap_top = [], "", int(H * 0.68)
@@ -182,8 +219,100 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
             top_side = s["speaker"]
             other = "right" if top_side == "left" else "left"
             js.append(f'tl.set("#tile-{top_side}", {{y:0}}, {s["start"] / rate:.3f}); tl.set("#tile-{other}", {{y:{th}}}, {s["start"] / rate:.3f});')
+    elif layout == "event":
+        # One column with the same margin on all four sides: header, picture + score bar,
+        # a fixed callout slot and the sponsor credit, with equal gaps between them.
+        sb = spec.get("scorebar")
+        M = int(spec.get("margin", round(min(W, H) * 0.045)))
+        BW = W - 2 * M
+        k = BW / sw
+        crop_b = sb[1] if sb else sh  # band shows the picture above the score bar
+        bh = round(crop_b * k)
+        ss = float(spec.get("scorebar_scale", 1.35))
+        sbw, sbh = (sb[2] * k * ss, sb[3] * k * ss) if sb else (0, 0)
+        cover = max(W / sw, H / sh) * 1.08
+        mv = os.path.basename(media)
+        fs_title, fs_tag, fs_co = (86, 34, 70) if tall else (62, 30, 58)
+        body = (f'<video id="bg" class="clip" src="assets/{mv}" {vid} data-track-index="1" muted '
+                f'style="position:absolute;left:{(W - sw * cover) / 2:.0f}px;top:{(H - sh * cover) / 2:.0f}px;width:{sw * cover:.0f}px;height:{sh * cover:.0f}px;filter:blur(34px) brightness(.5) saturate(1.2)"></video>'
+                f'<div style="position:absolute;inset:0;background:linear-gradient(180deg,{t["dark"]}e6 0%,{t["deep"]}55 38%,{t["deep"]}55 62%,{t["dark"]}f2 100%)"></div>')
+        items = []
+        head = ""
+        if clip.get("tag"):
+            head += (f'<div id="tag" style="display:flex;justify-content:center"><span style="display:inline-block;padding:12px 26px 9px;border-radius:999px;background:{t["ink"]};color:#fff;'
+                     f'font:800 {fs_tag}px/1 {t["head_font"]}, sans-serif;letter-spacing:.06em">{E(clip["tag"])}</span></div>')
+            js.append('tl.fromTo("#tag", {opacity:0, y:-16}, {opacity:1, y:0, duration:.4, ease:"back.out(1.8)"}, .05);')
+        if clip.get("title"):
+            head += (f'<div id="ttl" style="margin-top:{round(fs_title * .22)}px;margin-bottom:-{round(fs_title * .18)}px;color:#fff;font:900 {fs_title}px/.92 {t["head_font"]}, sans-serif;'
+                     f'text-transform:uppercase;letter-spacing:-.01em;text-shadow:0 6px 30px #0009">{E(clip["title"])}</div>')
+            js.append('tl.fromTo("#ttl", {opacity:0, y:24}, {opacity:1, y:0, duration:.5, ease:"power3.out"}, .15);')
+        if head:
+            items.append(f'<div style="text-align:center">{head}</div>')
+        media_html = (f'<div id="band" style="position:relative;width:{BW}px;height:{bh}px;overflow:hidden;box-shadow:0 24px 60px #0008">'
+                      f'<div id="cam" style="position:absolute;left:0;top:0;width:{sw}px;height:{sh}px;transform-origin:0 0">'
+                      f'<video id="v" class="clip" src="assets/{mv}" {vid} data-track-index="0" data-has-audio="true" style="width:{sw}px;height:{sh}px"></video>{covers}</div>'
+                      f'<div id="flash" style="position:absolute;inset:0;background:#fff;opacity:0"></div></div>')
+        if sb:
+            sk = k * ss
+            media_html += (f'<div style="position:relative;margin:0 auto;width:{sbw:.0f}px;height:{sbh:.0f}px;overflow:hidden">'
+                           f'<video id="sb" class="clip" src="assets/{mv}" {vid} data-track-index="2" muted '
+                           f'style="position:absolute;left:{-sb[0] * sk:.1f}px;top:{-sb[1] * sk:.1f}px;width:{sw * sk:.1f}px;height:{sh * sk:.1f}px"></video></div>')
+        items.append(f'<div>{media_html}</div>')
+        js.append(f'tl.set("#cam", {{x:0, y:0, scale:{k:.4f}}}, 0);')
+        for a, b, cx, cy, z in clip.get("punch", []):
+            K = k * z
+            x = fit(BW / 2 - cx * K, BW - sw * K, 0)
+            y = fit(bh / 2 - cy * K, bh - crop_b * K, 0)
+            js.append(f'tl.to("#cam", {{x:{x:.1f}, y:{y:.1f}, scale:{K:.4f}, duration:.32, ease:"power3.out"}}, {a / rate:.3f});')
+            js.append(f'tl.to("#cam", {{x:0, y:0, scale:{k:.4f}, duration:.5, ease:"power2.inOut"}}, {b / rate:.3f});')
+        cos = ""
+        for i, co in enumerate(clip.get("callouts", [])):
+            ct, label = co[0] / rate, co[1]
+            pts = co[2] if len(co) > 2 else ""
+            chip = f'<span style="display:inline-block;margin-left:16px;padding:10px 18px 6px;border-radius:16px;background:#fff;color:{t["ink"]}">{E(pts)}</span>' if pts else ""
+            cos += (f'<div id="co{i}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0">'
+                    f'<span style="display:inline-flex;align-items:center;padding:16px {20 if pts else 34}px 16px 34px;border-radius:26px;background:{t["ink"]};color:#fff;'
+                    f'font:900 {fs_co}px/1 {t["head_font"]}, sans-serif;letter-spacing:.02em;box-shadow:0 18px 50px #0007">{E(label)}{chip}</span></div>')
+            js.append(f'tl.fromTo("#co{i}", {{opacity:0, scale:.55}}, {{opacity:1, scale:1, duration:.38, ease:"back.out(2.2)"}}, {ct:.3f});')
+            js.append(f'tl.to("#co{i}", {{opacity:0, y:-20, duration:.35, ease:"power2.in"}}, {ct + 2.2:.3f});')
+            js.append(f'tl.set("#flash", {{opacity:.32}}, {ct:.3f}); tl.to("#flash", {{opacity:0, duration:.3, ease:"power2.out"}}, {ct + 0.01:.3f});')
+        if cos:  # fixed-height slot so the column doesn't shift when a callout appears
+            items.append(f'<div style="position:relative;width:{BW}px;height:{fs_co + 48}px">{cos}</div>')  # pill: 16px padding + chip (font + 16)
+        sp = spec.get("sponsor")
+        if sp:
+            items.append(f'<div id="spn" style="display:flex;align-items:center;justify-content:center;gap:22px">'
+                         f'<span style="font:700 26px/1 {t["head_font"]}, sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc">{E(sp.get("label", "Presented by"))}</span>'
+                         f'<img src="{asset(sp["logo"])}" style="height:{sp.get("height", 96) * (1 if tall else .8):.0f}px"></div>')
+            js.append('tl.fromTo("#spn", {opacity:0}, {opacity:.95, duration:.6}, .6);')
+        body += (f'<div style="position:absolute;inset:{M}px;display:flex;flex-direction:column;align-items:center;justify-content:space-between">'
+                 + "".join(items) + '</div>')
+        clip = {**clip, "title": None, "callouts": []}
     else:
         sys.exit(f"error: unknown layout {layout!r}")
+
+    for i, co in enumerate(clip.get("callouts", [])):
+        ct, label = co[0] / rate, co[1]
+        pts = co[2] if len(co) > 2 else ""
+        chip = f'<span style="display:inline-block;margin-left:16px;padding:10px 18px 6px;border-radius:16px;background:#fff;color:{t["ink"]}">{E(pts)}</span>' if pts else ""
+        body += (f'<div id="co{i}" style="position:absolute;left:0;right:0;top:{int(H * 0.62)}px;text-align:center;opacity:0">'
+                 f'<span style="display:inline-flex;align-items:center;padding:16px 20px 16px 34px;border-radius:26px;background:{t["ink"]};color:#fff;'
+                 f'font:900 {70 if tall else 58}px/1 {t["head_font"]}, sans-serif;letter-spacing:.02em;box-shadow:0 18px 50px #0007">{E(label)}{chip}</span></div>')
+        js.append(f'tl.fromTo("#co{i}", {{opacity:0, scale:.55}}, {{opacity:1, scale:1, duration:.38, ease:"back.out(2.2)"}}, {ct:.3f});')
+        js.append(f'tl.to("#co{i}", {{opacity:0, y:-20, duration:.35, ease:"power2.in"}}, {ct + 2.2:.3f});')
+
+    sp = spec.get("sponsor")
+    if sp and layout != "event":
+        body += (f'<div id="spn" style="position:absolute;left:0;right:0;top:{int(H * 0.82)}px;display:flex;align-items:center;justify-content:center;gap:22px;opacity:.95">'
+                 f'<span style="font:700 26px/1 {t["head_font"]}, sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc">{E(sp.get("label", "Presented by"))}</span>'
+                 f'<img src="{asset(sp["logo"])}" style="height:{sp.get("height", 96)}px"></div>')
+        js.append('tl.fromTo("#spn", {opacity:0}, {opacity:.95, duration:.6}, .6);')
+
+    if ec:
+        lg = f'<img src="{asset(ec["logo"])}" style="width:520px">' if ec.get("logo") else ""
+        line = f'<div style="margin-top:46px;font:900 64px/1.05 {t["head_font"]}, sans-serif;color:#fff;text-transform:uppercase;letter-spacing:.02em">{E(ec.get("line", ""))}</div>' if ec.get("line") else ""
+        body += (f'<div id="end" style="position:absolute;inset:0;background:{t["deep"]};display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0">{lg}{line}</div>')
+        js.append(f'tl.to("#end", {{opacity:1, duration:.45, ease:"power2.out"}}, {clip_dur:.3f});')
+        js.append(f'tl.fromTo("#end img, #end div", {{y:30}}, {{y:0, duration:.6, ease:"power3.out", stagger:.08}}, {clip_dur:.3f});')
 
     if clip.get("title"):
         tt = clip.get("_title_top", 110)
@@ -212,7 +341,7 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
     <meta name="viewport" content="width={W}, height={H}" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
-      * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+      {faces}* {{ margin: 0; padding: 0; box-sizing: border-box; }}
       html, body {{ width: {W}px; height: {H}px; overflow: hidden; background: {t['dark']}; }}
       #root {{ position: relative; width: {W}px; height: {H}px; overflow: hidden; }}
       .cap {{ position: absolute; left: 50%; top: {cap_top}px; transform: translateX(-50%); visibility: hidden; opacity: 0; white-space: nowrap;
@@ -270,6 +399,12 @@ def main() -> None:
             out = os.path.join(renders, f"{clip['name']}.mp4")
             subprocess.run(["npx", "--yes", f"hyperframes@{version}", "render", "-o", out, "-q", a.quality,
                             "--video-frame-format", "png"], cwd=proj, check=True)
+            lufs = spec.get("loudness")
+            if lufs is not None:  # quiet room or event audio: bring it up to a social-feed level
+                tmp = out + ".tmp.mp4"
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", out, "-c:v", "copy", "-af", f"loudnorm=I={lufs}:TP=-1.5:LRA=11",
+                                "-c:a", "aac", "-b:a", "192k", tmp], check=True)
+                os.replace(tmp, out)
             print(f"rendered {out}")
 
 
