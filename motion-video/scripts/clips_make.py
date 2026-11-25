@@ -119,24 +119,116 @@ def fit(x, lo, hi):
     return max(lo, min(hi, x))
 
 
+
+def camera_track(clip, spec_dir, k, up, rate, dur, BW, bh, sw, crop_b):
+    """GSAP steps for the event band's camera: follow the action and punch in on big moves.
+
+    clip "follow": [[t, x, y], ...] or a path to a JSON list from clips_track.py; a 4th value
+    of 1 marks a camera cut (jump, don't glide). clip "punch": [[from, to, zoom], ...] or the
+    older [[from, to, x, y, zoom], ...]. Times are clip-local seconds, positions source pixels.
+    """
+    fol = clip.get("follow")
+    if isinstance(fol, str):
+        fol = json.load(open(os.path.join(spec_dir, fol)))
+    fol = [[p[0], p[1] * up, p[2] * up, (p[3] if len(p) > 3 else 0)] for p in (fol or [])]
+    punches = []
+    for p in clip.get("punch", []):
+        if len(p) == 5:
+            punches.append((p[0], p[1], p[4], p[2] * up, p[3] * up))
+        else:
+            punches.append((p[0], p[1], p[2], None, None))
+
+    def center(t):
+        if not fol:
+            return sw / 2, crop_b / 2
+        if t <= fol[0][0]:
+            return fol[0][1], fol[0][2]
+        for a, b in zip(fol, fol[1:]):
+            if a[0] <= t < b[0]:
+                if b[3]:  # cut: hold until the cut, then jump
+                    return a[1], a[2]
+                f = (t - a[0]) / max(1e-6, b[0] - a[0])
+                return a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f
+        return fol[-1][1], fol[-1][2]
+
+    def zoom(t):
+        z, cx, cy = 1.0, None, None
+        for a, b, pz, px, py in punches:
+            if a - 0.3 <= t <= b + 0.45:
+                e = min(1, (t - (a - 0.3)) / 0.3, (b + 0.45 - t) / 0.45)
+                e = e * e * (3 - 2 * e)
+                z = 1 + (pz - 1) * max(0, e)
+                if px is not None:
+                    cx, cy = px, py
+        return z, cx, cy
+
+    cut_at = {round(p[0], 2) for p in fol if p[3]}
+    steps, t, prev = [], 0.0, None
+    while t <= dur * rate + 1e-6:
+        cx, cy = center(t)
+        z, px, py = zoom(t)
+        if px is not None:
+            cx, cy = px, py
+        K = k * z
+        x = fit(BW / 2 - cx * K, BW - sw * K, 0)
+        y = fit(bh / 2 - cy * K, bh - crop_b * K, 0)
+        cur = (round(x, 1), round(y, 1), round(K, 4))
+        tt = t / rate
+        if prev is None or any(abs(c - round(t, 2)) < 0.13 for c in cut_at):
+            steps.append(f'tl.set("#cam", {{x:{cur[0]}, y:{cur[1]}, scale:{cur[2]}}}, {tt:.3f});')
+        elif cur != prev:
+            steps.append(f'tl.to("#cam", {{x:{cur[0]}, y:{cur[1]}, scale:{cur[2]}, duration:{0.25 / rate:.3f}, ease:"none"}}, {tt - 0.25 / rate:.3f});')
+        prev, t = cur, round(t + 0.25, 3)
+    return steps
+
 def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
     fmt = spec.get("format", "9:16")
     W, H = SIZES[fmt] if fmt in SIZES else tuple(int(n) for n in fmt.lower().split("x"))
     tall = H > W * 1.3
-    src = os.path.normpath(os.path.join(spec_dir, spec["source"]))
+    src = os.path.normpath(os.path.join(spec_dir, clip.get("source", spec["source"])))
     sw, sh = probe(src)
     rate = float(clip.get("rate", 1))
-    dur = round((clip["end"] - clip["start"]) / rate, 3)
     layout = clip.get("layout", "center")
     out_root = os.path.join(spec_dir, spec.get("out", "clips"))
     proj = os.path.join(out_root, clip["name"])
     os.makedirs(os.path.join(proj, "assets"), exist_ok=True)
-    media = os.path.join(proj, "assets", "source" + os.path.splitext(src)[1])
-    if not os.path.exists(media):
-        try:
-            os.link(src, media)
-        except OSError:
-            shutil.copy2(src, media)
+    up = float(clip.get("upscale", spec.get("upscale", 1)))
+    segs = clip.get("segments") or [[clip["start"], clip["end"]]]
+    cuts = []  # clip-local times where a montage jumps to its next segment
+    if up != 1 or clip.get("segments"):
+        # Cut the segments out, join them and (optionally) upscale with lanczos + light sharpening,
+        # so zoomed-in 720p looks cleaner than the browser's own scaling. Source-pixel fields
+        # (scorebar, punch, follow) stay in original pixels; they're multiplied by `up` below.
+        media = os.path.join(proj, "assets", "prepped.mp4")
+        sig = json.dumps({"src": src, "segs": segs, "up": up})
+        sigf = media + ".json"
+        if not (os.path.exists(media) and os.path.exists(sigf) and open(sigf).read() == sig):
+            cmd, fl = ["ffmpeg", "-v", "error", "-y"], []
+            for i, (a, b) in enumerate(segs):
+                cmd += ["-ss", f"{a}", "-t", f"{b - a}", "-i", src]
+                fd = max(0.0, b - a - 0.04)
+                fl.append(f"[{i}:v]setpts=PTS-STARTPTS" + (f",scale=iw*{up}:ih*{up}:flags=lanczos,unsharp=5:5:0.5" if up != 1 else "") + f"[v{i}]")
+                fl.append(f"[{i}:a]asetpts=PTS-STARTPTS,afade=t=in:d=0.04,afade=t=out:st={fd:.3f}:d=0.04[a{i}]")
+            fl.append("".join(f"[v{i}][a{i}]" for i in range(len(segs))) + f"concat=n={len(segs)}:v=1:a=1[v][a]")
+            subprocess.run(cmd + ["-filter_complex", ";".join(fl), "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "14",
+                                  "-preset", "fast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", media], check=True)
+            open(sigf, "w").write(sig)
+        acc = 0.0
+        for a, b in segs[:-1]:
+            acc += b - a
+            cuts.append(round(acc / rate, 3))
+        clip = {**clip, "start": 0.0, "end": sum(b - a for a, b in segs)}
+        sw, sh = probe(media)
+        words = None  # transcript times refer to the original source
+    else:
+        up = 1.0
+        media = os.path.join(proj, "assets", "source" + os.path.splitext(src)[1])
+        if not os.path.exists(media):
+            try:
+                os.link(src, media)
+            except OSError:
+                shutil.copy2(src, media)
+    dur = round((clip["end"] - clip["start"]) / rate, 3)
     t = theme
 
     def asset(rel):  # copy a brand file into the clip project and return its project path
@@ -159,7 +251,7 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
     vid = f'data-start="0" data-duration="{dur}" data-media-start="{clip["start"]}"{rate_attr} playsinline'
     js, body, cap_top = [], "", int(H * 0.68)
     covers = ""
-    for i, (ca, cb, cm) in enumerate(spec.get("covers", [])):
+    for i, (ca, cb, cm) in enumerate([] if media.endswith("prepped.mp4") else spec.get("covers", [])):
         lo, hi = max(ca, clip["start"]), min(cb, clip["end"])
         if hi - lo > 0.05:  # muted clean footage over a private stretch, same framing as the main video
             covers += (f'<video id="cov{i}" class="clip" src="assets/{os.path.basename(media)}" data-start="{(lo - clip["start"]) / rate:.3f}" '
@@ -223,14 +315,22 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
     elif layout == "event":
         # One column with the same margin on all four sides: header, picture + score bar,
         # a fixed callout slot and the sponsor credit, with equal gaps between them.
-        sb = spec.get("scorebar")
+        sb = [v * up for v in spec["scorebar"]] if spec.get("scorebar") else None
         M = int(spec.get("margin", round(min(W, H) * 0.045)))
         BW = W - 2 * M
-        k = BW / sw
         crop_b = sb[1] if sb else sh  # band shows the picture above the score bar
-        bh = round(crop_b * k)
+        aspect = clip.get("band_aspect", spec.get("band_aspect"))
+        if aspect:  # a tighter window (w/h = aspect) that follows the action instead of the full width
+            win_w = min(sw, crop_b * float(aspect))
+            k = BW / win_w
+            bh = round(BW / float(aspect))
+        else:
+            win_w = sw
+            k = BW / sw
+            bh = round(crop_b * k)
         ss = float(spec.get("scorebar_scale", 1.35))
-        sbw, sbh = (sb[2] * k * ss, sb[3] * k * ss) if sb else (0, 0)
+        sk = min(k * ss, BW * 0.92 / sb[2]) if sb else 0
+        sbw, sbh = (sb[2] * sk, sb[3] * sk) if sb else (0, 0)
         cover = max(W / sw, H / sh) * 1.08
         mv = os.path.basename(media)
         fs_title, fs_tag, fs_co = (86, 34, 70) if tall else (76, 34, 58)
@@ -254,29 +354,26 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
                       f'<video id="v" class="clip" src="assets/{mv}" {vid} data-track-index="0" data-has-audio="true" style="width:{sw}px;height:{sh}px"></video>{covers}</div>'
                       f'<div id="flash" style="position:absolute;inset:0;background:#fff;opacity:0"></div></div>')
         if sb:
-            sk = k * ss
             media_html += (f'<div style="position:relative;margin:0 auto;width:{sbw:.0f}px;height:{sbh:.0f}px;overflow:hidden">'
                            f'<video id="sb" class="clip" src="assets/{mv}" {vid} data-track-index="2" muted '
                            f'style="position:absolute;left:{-sb[0] * sk:.1f}px;top:{-sb[1] * sk:.1f}px;width:{sw * sk:.1f}px;height:{sh * sk:.1f}px"></video></div>')
         media_at = len(items)
         items.append(media_html)
-        js.append(f'tl.set("#cam", {{x:0, y:0, scale:{k:.4f}}}, 0);')
-        for a, b, cx, cy, z in clip.get("punch", []):
-            K = k * z
-            x = fit(BW / 2 - cx * K, BW - sw * K, 0)
-            y = fit(bh / 2 - cy * K, bh - crop_b * K, 0)
-            js.append(f'tl.to("#cam", {{x:{x:.1f}, y:{y:.1f}, scale:{K:.4f}, duration:.32, ease:"power3.out"}}, {a / rate:.3f});')
-            js.append(f'tl.to("#cam", {{x:0, y:0, scale:{k:.4f}, duration:.5, ease:"power2.inOut"}}, {b / rate:.3f});')
+        js.extend(camera_track(clip, spec_dir, k, up, rate, dur, BW, bh, sw, crop_b))
+        for ct in cuts:  # montage joins: a quick flash hides the jump
+            js.append(f'tl.set("#flash", {{opacity:.5}}, {ct:.3f}); tl.to("#flash", {{opacity:0, duration:.25, ease:"power2.out"}}, {ct + 0.01:.3f});')
         cos = ""
-        for i, co in enumerate(clip.get("callouts", [])):
+        calls = sorted(clip.get("callouts", []), key=lambda c: c[0])
+        for i, co in enumerate(calls):
             ct, label = co[0] / rate, co[1]
+            off = min(ct + 2.2, calls[i + 1][0] / rate - 0.05) if i + 1 < len(calls) else ct + 2.2  # next callout replaces this one
             pts = co[2] if len(co) > 2 else ""
             chip = f'<span style="display:inline-block;margin-left:16px;padding:10px 18px 6px;border-radius:16px;background:#fff;color:{t["ink"]}">{E(pts)}</span>' if pts else ""
             cos += (f'<div id="co{i}" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0">'
                     f'<span style="display:inline-flex;align-items:center;padding:16px {20 if pts else 34}px 16px 34px;border-radius:26px;background:{t["ink"]};color:#fff;'
                     f'font:900 {fs_co}px/1 {t["head_font"]}, sans-serif;letter-spacing:.02em;box-shadow:0 18px 50px #0007">{E(label)}{chip}</span></div>')
             js.append(f'tl.fromTo("#co{i}", {{opacity:0, scale:.55}}, {{opacity:1, scale:1, duration:.38, ease:"back.out(2.2)"}}, {ct:.3f});')
-            js.append(f'tl.to("#co{i}", {{opacity:0, y:-20, duration:.35, ease:"power2.in"}}, {ct + 2.2:.3f});')
+            js.append(f'tl.to("#co{i}", {{opacity:0, y:-20, duration:{min(.35, max(.05, off - ct - .4)):.2f}, ease:"power2.in"}}, {off - min(.35, max(.05, off - ct - .4)):.3f});')
             js.append(f'tl.set("#flash", {{opacity:.32}}, {ct:.3f}); tl.to("#flash", {{opacity:0, duration:.3, ease:"power2.out"}}, {ct + 0.01:.3f});')
         if cos:  # callouts sit on the picture, near its bottom edge, so no empty slot opens up in the column
             pill = fs_co + 48  # 16px padding + chip (font + 16)
@@ -288,7 +385,8 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
                          f'<span style="font:700 {30 if not tall else 26}px/1 {t["head_font"]}, sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc">{E(sp.get("label", "Presented by"))}</span>'
                          f'<img src="{asset(sp["logo"])}" style="height:{sp.get("height", 96) * (1 if tall else .95):.0f}px"></div>')
             js.append('tl.fromTo("#spn", {opacity:0}, {opacity:.95, duration:.6}, .6);')
-        body += (f'<div style="position:absolute;inset:{M}px;display:flex;flex-direction:column;align-items:center;justify-content:space-between">'
+        pad_t, pad_b = (spec.get("safe") or ([round(H * .11), round(H * .13)] if tall else [M, M]))  # stories: keep clear of the top bar and reply box
+        body += (f'<div style="position:absolute;left:{M}px;right:{M}px;top:{pad_t}px;bottom:{pad_b}px;display:flex;flex-direction:column;align-items:center;justify-content:space-between">'
                  + "".join(items) + '</div>')
         clip = {**clip, "title": None, "callouts": []}
     else:
