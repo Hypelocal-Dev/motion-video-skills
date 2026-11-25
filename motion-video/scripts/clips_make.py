@@ -40,7 +40,8 @@ speed, e.g. 1.15), captions (false to turn off), and layout fields:
           zoom 1.3-1.6 on 720p) punches in on big moves. Spec-level "scorebar":
           [x, y, w, h] in source pixels, optional "scorebar_scale" (default 1.35) and
           "margin" (px on every side; default 4.5% of the short side). Tag, title,
-          picture, callout slot and sponsor are spaced evenly down the frame.
+          picture and sponsor are spaced evenly down the frame; callouts pop in
+          over the bottom of the picture.
 
 Extras for any layout:
   "tag": "GAME 3 · HAWKS VS RAVENS"         small pill above the title
@@ -232,7 +233,7 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
         sbw, sbh = (sb[2] * k * ss, sb[3] * k * ss) if sb else (0, 0)
         cover = max(W / sw, H / sh) * 1.08
         mv = os.path.basename(media)
-        fs_title, fs_tag, fs_co = (86, 34, 70) if tall else (62, 30, 58)
+        fs_title, fs_tag, fs_co = (86, 34, 70) if tall else (76, 34, 58)
         body = (f'<video id="bg" class="clip" src="assets/{mv}" {vid} data-track-index="1" muted '
                 f'style="position:absolute;left:{(W - sw * cover) / 2:.0f}px;top:{(H - sh * cover) / 2:.0f}px;width:{sw * cover:.0f}px;height:{sh * cover:.0f}px;filter:blur(34px) brightness(.5) saturate(1.2)"></video>'
                 f'<div style="position:absolute;inset:0;background:linear-gradient(180deg,{t["dark"]}e6 0%,{t["deep"]}55 38%,{t["deep"]}55 62%,{t["dark"]}f2 100%)"></div>')
@@ -257,7 +258,8 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
             media_html += (f'<div style="position:relative;margin:0 auto;width:{sbw:.0f}px;height:{sbh:.0f}px;overflow:hidden">'
                            f'<video id="sb" class="clip" src="assets/{mv}" {vid} data-track-index="2" muted '
                            f'style="position:absolute;left:{-sb[0] * sk:.1f}px;top:{-sb[1] * sk:.1f}px;width:{sw * sk:.1f}px;height:{sh * sk:.1f}px"></video></div>')
-        items.append(f'<div>{media_html}</div>')
+        media_at = len(items)
+        items.append(media_html)
         js.append(f'tl.set("#cam", {{x:0, y:0, scale:{k:.4f}}}, 0);')
         for a, b, cx, cy, z in clip.get("punch", []):
             K = k * z
@@ -276,13 +278,15 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
             js.append(f'tl.fromTo("#co{i}", {{opacity:0, scale:.55}}, {{opacity:1, scale:1, duration:.38, ease:"back.out(2.2)"}}, {ct:.3f});')
             js.append(f'tl.to("#co{i}", {{opacity:0, y:-20, duration:.35, ease:"power2.in"}}, {ct + 2.2:.3f});')
             js.append(f'tl.set("#flash", {{opacity:.32}}, {ct:.3f}); tl.to("#flash", {{opacity:0, duration:.3, ease:"power2.out"}}, {ct + 0.01:.3f});')
-        if cos:  # fixed-height slot so the column doesn't shift when a callout appears
-            items.append(f'<div style="position:relative;width:{BW}px;height:{fs_co + 48}px">{cos}</div>')  # pill: 16px padding + chip (font + 16)
+        if cos:  # callouts sit on the picture, near its bottom edge, so no empty slot opens up in the column
+            pill = fs_co + 48  # 16px padding + chip (font + 16)
+            items[media_at] += f'<div style="position:absolute;left:0;top:{bh - pill - round(bh * .05)}px;width:{BW}px;height:{pill}px">{cos}</div>'
+        items[media_at] = f'<div style="position:relative">{items[media_at]}</div>'
         sp = spec.get("sponsor")
         if sp:
             items.append(f'<div id="spn" style="display:flex;align-items:center;justify-content:center;gap:22px">'
-                         f'<span style="font:700 26px/1 {t["head_font"]}, sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc">{E(sp.get("label", "Presented by"))}</span>'
-                         f'<img src="{asset(sp["logo"])}" style="height:{sp.get("height", 96) * (1 if tall else .8):.0f}px"></div>')
+                         f'<span style="font:700 {30 if not tall else 26}px/1 {t["head_font"]}, sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ffffffcc">{E(sp.get("label", "Presented by"))}</span>'
+                         f'<img src="{asset(sp["logo"])}" style="height:{sp.get("height", 96) * (1 if tall else .95):.0f}px"></div>')
             js.append('tl.fromTo("#spn", {opacity:0}, {opacity:.95, duration:.6}, .6);')
         body += (f'<div style="position:absolute;inset:{M}px;display:flex;flex-direction:column;align-items:center;justify-content:space-between">'
                  + "".join(items) + '</div>')
