@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.10.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.9.0...v0.10.0) (2026-11-25)
+
+
+### Features
+
+* follow the action, cut montages and sharpen zoomed event clips ([#28](https://github.com/Hypelocal-Dev/motion-video-skills/issues/28)) ([4e7eed2](https://github.com/Hypelocal-Dev/motion-video-skills/commit/4e7eed21d87cdbd86a8eeb01d332b3bb8759efa5))
+
 ## [0.9.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.8.0...v0.9.0) (2026-11-25)
 
 
