@@ -11,6 +11,25 @@ motion videos made with Claude, with the prompts behind them. The prompts belong
 their creators, so this skill describes the techniques in its own words and links to the
 originals in [references/prompt-motion.md](references/prompt-motion.md).
 
+## Matching a rough idea
+
+When the person describes what they want loosely ("make it pop", "something like a
+sports highlight", "a slick reveal at the end"), translate it into named techniques before
+building. Look in these, in order:
+
+1. **This skill's patterns** below.
+2. **The person's own reference folder** (the reference-library skill), if they have one.
+3. **[Prompt Motion](https://prompt-motion.com)**: see [references/prompt-motion.md](references/prompt-motion.md).
+4. **[MotionVideo](https://motionvideo.xyz)**: its Moves catalog names the technique
+   (match cut, spring, split-flap text) and its gallery shows it in use. See
+   [references/motionvideo-xyz.md](references/motionvideo-xyz.md).
+5. **The HyperFrames registry** (hyperframes-registry skill) for a ready-made block that
+   already does it.
+
+Show the person two or three matches with links ("this, this or this?") and build from
+the one they pick. Describe techniques in your own words, and never copy prompts from
+these sites into a project or this repo.
+
 ## Use these
 
 ### One world, one camera
