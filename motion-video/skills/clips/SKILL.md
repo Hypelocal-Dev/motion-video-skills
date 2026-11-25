@@ -81,6 +81,24 @@ picking moments.
   are always readable. Add `punch` windows on the big moves (zoom 1.3-1.6; more looks soft
   on 720p). Multi-camera broadcasts switch angles, so aim each punch at a full-size frame
   from inside its window, not at a guess.
+  - **Tighter on the action:** set `band_aspect` (1.25 suits 9:16 stories) to show a
+    window that follows the athletes instead of the full width. Get the path with
+    `"$MV_VENV/bin/python" $MV/clips_track.py <video> --start S --end E -o work/follow-<name>.json --sheet work/sheets/<name>.jpg`
+    and point the clip's `follow` at the JSON. Look at the sheet: the yellow box should
+    hold the athletes in every frame. It finds them as the densest non-floor cluster on
+    the mat (`--floor blue|green|red`), ignores floor logos, and marks camera cuts.
+    With a following window, `punch` can be `[from, to, zoom]`; skip punches on close
+    camera angles, which are already tight.
+  - **`upscale: 1.5`** pre-scales the source with lanczos and light sharpening, which
+    holds up better than browser scaling when a 720p window is blown up.
+  - **Montages and multi-part clips:** give `segments: [[a, b], ...]` instead of
+    `start`/`end`. They're joined with a quick flash, and `punch`, `follow` and
+    `callouts` times run on the joined timeline (`clips_track.py --segments a-b,c-d`
+    matches). Score bars update 2-3 s after the move, so end each segment a few seconds
+    after the score change you want on screen.
+  - A clip can take its own `source` when one project pulls from several files.
+  - Stories: 9:16 event clips keep clear of Instagram's top bar and reply box (`safe`:
+    [top, bottom] in px). Keep story clips under 60 s including the end card.
 - **A slow stretch inside a good clip:** speed the whole clip a little with `"rate": 1.1`
   to `1.25`, or end it earlier. Above 1.25 speech sounds rushed.
 
