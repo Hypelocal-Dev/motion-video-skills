@@ -74,8 +74,32 @@ picking moments.
   speaker on top). Get speaker turns first: sample a frame, put a box over each mouth
   and chin, check the boxes by drawing them on the frame (at most two tries), then
   `python3 $MV/clips_speakers.py <video> --left x,y,w,h --right x,y,w,h --start S --end E -o work/speakers-<name>.json`.
+- **Wide event or sports footage with a broadcast score bar** (fight nights, games,
+  races): `event`. The whole shot sits in a band over a blurred copy of itself, so nothing
+  is cropped and 720p stays sharp. The score bar is cut out and pinned under the band
+  (spec `scorebar: [x, y, w, h]`; measure it on a full-size frame) so names and the clock
+  are always readable. Add `punch` windows on the big moves (zoom 1.3-1.6; more looks soft
+  on 720p). Multi-camera broadcasts switch angles, so aim each punch at a full-size frame
+  from inside its window, not at a guess.
 - **A slow stretch inside a good clip:** speed the whole clip a little with `"rate": 1.1`
   to `1.25`, or end it earlier. Above 1.25 speech sounds rushed.
+
+## Finding moments in event footage
+
+Hit detection doesn't work on grappling or most sports. Use these instead:
+
+- **The score bar.** Tile a crop of it every 5 s (`ffmpeg ... crop=...,fps=1/5,tile=4x30`)
+  and read when points, advantages, the clock or a winner tag change. A frozen clock with
+  a winner tag means a finish.
+- **Crowd loudness.** Per-second RMS (see `clips_find.py` or a short numpy pass) shows
+  where the room erupts. Silence usually means a full-screen card between matches.
+- Then look at 1 frame per second around each change to see the move, and name callouts
+  only for what you can see. If you can't tell the technique (heel hook or ankle lock?),
+  use the general word ("SUBMISSION").
+
+Extras for highlight clips: `tag` (matchup pill), `callouts` (`[t, "TAKEDOWN", "+2"]`,
+land them on the move, not on the score update), spec `sponsor` and `endcard`, and
+`loudness: -14` when the room audio is quiet. Formats can be any `WxH`, such as `1200x1200`.
 
 ## 6. Build, look, render
 
