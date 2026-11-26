@@ -3,6 +3,13 @@
 All notable changes to this project are documented here. Versions follow
 [Semantic Versioning](https://semver.org). This file is maintained by release-please.
 
+## [0.11.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.10.0...v0.11.0) (2026-11-26)
+
+
+### Features
+
+* lay a music bed under clips whose source audio is missing ([#30](https://github.com/Hypelocal-Dev/motion-video-skills/issues/30)) ([0c9927b](https://github.com/Hypelocal-Dev/motion-video-skills/commit/0c9927bc1115132b7d70c7b8320e3e049a8bd945))
+
 ## [0.10.0](https://github.com/Hypelocal-Dev/motion-video-skills/compare/v0.9.0...v0.10.0) (2026-11-25)
 
 
