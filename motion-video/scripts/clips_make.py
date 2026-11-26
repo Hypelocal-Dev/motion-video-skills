@@ -49,6 +49,8 @@ Extras for any layout:
 Spec-level extras:
   "sponsor": {"logo": "brand/logo.png", "label": "Presented by"}   small credit near the bottom
   "endcard": {"logo": "brand/logo.png", "line": "Tagline", "dur": 2.2}  added after the clip
+  "music": "music/bed.m4a", "music_volume": 0.6, "source_volume": 0.5   (spec or clip; "music": false
+          on a clip turns a spec-level bed off) a licensed or generated bed under the clip
   theme "font_files": {"Family": "brand/fonts/x.woff2"} (or {"Family": {"400": file, "900": file}}
   for static weights) are bundled so renders use the brand font.
 
@@ -435,6 +437,14 @@ def build(spec_dir: str, spec: dict, clip: dict, theme: dict, words) -> str:
             for j, w in enumerate(c):
                 js.append(f'tl.set("#w{i}_{j}",{{className:"w on"}},{w["t"]});tl.set("#w{i}_{j}",{{className:"w"}},{w["e"]});')
         body += caps
+
+    mus = clip.get("music", spec.get("music"))
+    if mus:  # a music bed under the clip; the room audio can be turned down under it
+        body += (f'<audio id="mus" class="clip" src="{asset(mus)}" data-start="0" data-duration="{dur}" '
+                 f'data-track-index="9" data-volume="{clip.get("music_volume", spec.get("music_volume", 0.6))}"></audio>')
+        sv = clip.get("source_volume", spec.get("source_volume"))
+        if sv is not None:
+            body = body.replace('data-has-audio="true"', f'data-has-audio="true" data-volume="{sv}"')
 
     index = f"""<!doctype html>
 <html lang="en">

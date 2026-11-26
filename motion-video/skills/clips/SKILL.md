@@ -97,6 +97,12 @@ picking moments.
     matches). Score bars update 2-3 s after the move, so end each segment a few seconds
     after the score change you want on screen.
   - A clip can take its own `source` when one project pulls from several files.
+  - **Music under a clip** (`music`, `music_volume`, `source_volume`, on the spec or a
+    clip): use it when the source has no usable sound, such as a stream audio dropout.
+    Rights-cleared sources: a public-domain 78 from the **archive-media** skill (cut,
+    then high-pass 60 Hz and low-pass 8 kHz), or an original lo-fi bed from
+    `"$MV_VENV/bin/python" $MV/tutorial_bed.py <dir> --seconds N`. Credit the source in
+    the project's notes.
   - Stories: 9:16 event clips keep clear of Instagram's top bar and reply box (`safe`:
     [top, bottom] in px). Keep story clips under 60 s including the end card.
 - **A slow stretch inside a good clip:** speed the whole clip a little with `"rate": 1.1`
